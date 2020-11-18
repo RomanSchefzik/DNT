@@ -1,0 +1,1387 @@
+
+#library(igraph)
+#library(Hmisc)
+#library(ppcor)
+
+#nicht brauchen library(expm)
+#statt psych stats? library(psych)
+#library(energy)
+
+#library(qgraph)
+
+#nicht brauchen library(mgm)
+
+#####################################################
+#######################################
+##############compute network difference characteristics (based on summarizing adjacency matrices)
+
+
+###########################
+
+#####1.) (i) overall network differences
+
+
+###Frobenius metric between two adjacency matrices
+
+
+#' Frobenius metric
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @param A,B matices.
+#' @details
+#' One of the methods to compare two networks on their overall network characteristics.
+#' @return The frobenius metric between two adjacency matrices \code{A} and \code{B}.
+#' @examples
+#' frobenius.metric(Diagonal(3,2), Diagonal(3,4))
+
+#'
+frobenius.metric<-function(A,B){
+  output<-sqrt(sum(abs((A-B)^2)))
+  return(output)
+}
+
+#' Maximum metric
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their overall network characteristics.
+#' @return The maximum metric between two adjacency matrices.
+#' @examples
+#' max.metr(Diagonal(3,2), Diagonal(3,4))
+#'
+max.metr<-function(A,B){
+  output<-max(abs(A-B))
+  return(output)
+}
+
+
+#' Spectral distance
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their overall network characteristics.
+#' @return The spectral distance between two adjacency matrices.
+#' @examples
+#' spec.dist(Diagonal(3,2), Diagonal(3,4))
+#'
+spec.dist<-function(A,B){
+  output<-sqrt(sum(((eigen(A)$values)-(eigen(B)$values))^2))
+  return(output)
+}
+
+
+### global strength
+#' Global strength
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their overall network characteristics.
+#' @return The global strength between two adjacency matrices.
+#' @examples
+#' global.str(Diagonal(3,2), Diagonal(3,4))
+#'
+global.str<-function(A,B){
+  output<-abs(sum(abs(A))-sum(abs(B)))
+  return(output)
+}
+
+
+################################################
+
+#perm.test.nw(A = x1, B = x2, permnum = 10, methodlist = list("DistCorr"), thresh = 0.05, score.funct = frobenius.metric)
+
+#' Permutation test network
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @param permnum the number of permutations.
+#' @param methodlist the methods used to create the adjacency matrices.
+#' @param thresh
+#' @param score.funct the function used to compare the adjacency matrices A and B.
+#' @param paried
+#' @details
+#' Details
+#' @return Return
+#' @examples
+#' perm.test.nw(A = x1, B = x2, permnum = 10, methodlist = list("DistCorr"), thresh = 0.05, score.funct = frobenius.metric)
+#' @export
+#'
+perm.test.nw<-function(A, B, permnum, methodlist, thresh, score.funct, paired=FALSE){
+
+
+  ##function to create adjacency matrix corresponding to raw data
+  create.adjacency.matrix<-function(A,methodlist,thresh=0.05){
+
+    method <- methodlist[[1]]
+    if(method=="Spearman"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$P>thresh]<-0
+    }
+
+    if(method=="PCSpearman"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$p.value>thresh]<-0
+    }
+
+    if(method=="Spearman.adj"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+
+      pmat<-correls$P
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+
+      adj.method <- methodlist[[2]]
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+    if(method=="PCSpearman.adj"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+
+      pmat<-correls$p.value
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      adj.method <- methodlist[[2]]
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>0.05]<-0
+    }
+
+
+
+
+    if(method=="DistCorr"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[pvals>thresh]<-0
+    }
+
+
+
+
+    if(method=="DistCorr.adj"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      pmat<-pvals
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      adj.method <- methodlist[[2]]
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+      rownames(pmat)<-colnames(A)
+      colnames(pmat)<-colnames(A)
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+
+    if(method=="EBICglasso"){
+      corm.ebicglasso <- methodlist[[2]]
+      tun.ebicglasso <- methodlist[[3]]
+      correls<-cor(A,method=corm.ebicglasso)
+      cm<-EBICglasso(correls,n=dim(A)[1],gamma=tun.ebicglasso)
+      # Keep only correlations with p-value <=thresh; NOT NECESSARY FOR EBICGLASSO, AS VARIABLE SELECTION IS PERFORMED
+      diag(cm)<-0
+      #cm[correls$p.value>thresh]<-0
+    }
+
+    output<-cm
+    return(output)
+
+  }
+
+
+
+  ###compute score for original unpermuted raw data
+  adj.A<-create.adjacency.matrix(A,methodlist=methodlist,thresh=thresh)
+  adj.B<-create.adjacency.matrix(B,methodlist=methodlist,thresh=thresh)
+  value.orig<-score.funct(adj.A,adj.B)
+
+
+  if(paired==FALSE){
+
+    D<-rbind(A,B)
+
+    #####function to create permutations from raw data
+    create.permut.unpaired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(nrow(D),replace=FALSE)
+      D.new<-D[s,]
+      A.new<-D.new[1:nrow(A),]
+      B.new<-D.new[(nrow(A)+1):(nrow(D.new)),]
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.unpaired)
+
+  }
+
+
+  if(paired==TRUE){
+
+    #####function to create permutations from raw data
+    create.permut.paired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(c("A","B"),nrow(A),replace=TRUE)
+      A.new<-rbind(A[s=="A",],B[s=="B",])
+      B.new<-rbind(B[s=="A",],A[s=="B",])
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.paired)
+
+  }
+
+
+
+  ##compute score for the permnum permuted data sets
+  value.perm<-rep(NA,permnum)
+  for (n in 1:permnum){
+    adj.A.perm<-create.adjacency.matrix(shuffle[[n]][[1]],methodlist=methodlist,thresh=thresh)
+    adj.B.perm<-create.adjacency.matrix(shuffle[[n]][[2]],methodlist=methodlist,thresh=thresh)
+    value.perm[n]<-score.funct(adj.A.perm,adj.B.perm)
+  }
+
+  ###permutation pseudocount p-value
+  num.extr<-sum(value.perm>=value.orig)
+  pvalue.ecdf<-num.extr/permnum
+  pvalue.ecdf.pseudo<-(1+num.extr)/(permnum+1)
+
+  output<-list(adj.A,adj.B,value.orig,value.perm,pvalue.ecdf,pvalue.ecdf.pseudo)
+  names(output)<-c("adjancency.matrix.A","adjacency.matrix.B","test.statistic","test.statistics.perm","pvalue","pvalue.pseudocount")
+
+  return(output)
+
+}
+
+
+
+
+
+
+
+
+#########################################1.) (ii) overall network difference characteristics
+##########################characteristics used by Asada et al. (2016)
+
+
+#' Differneces in the number of edges, of clusters, of isolated nodes
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their overall network characteristics.
+#' @return Return
+#' @examples
+#' diff.num(A,B)
+diff.num<-function(A,B){
+
+  if(all(A[[1]]==0) | all(B[[1]]==0)){
+    output<-rep(NA,6)
+    names(output)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST diff num of isolated nodes")
+    return(output)
+  }else{
+
+    dnumedges.g<-abs(A[[6]]-B[[6]])
+    dnumclus.g<-abs(A[[7]]-B[[7]])
+    dnumisolnodes.g<-abs(A[[8]]-B[[8]])
+
+
+    dnumedges.mst<-abs(A[[13]]-B[[13]])
+    dnumclus.mst<-abs(A[[14]]-B[[14]])
+    dnumisolnodes.mst<-abs(A[[15]]-B[[15]])
+
+
+    output<-c(dnumedges.g,dnumclus.g,dnumisolnodes.g,dnumedges.mst,dnumclus.mst,dnumisolnodes.mst)
+    names(output)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST diff num of isolated nodes")
+    return(output)
+  }
+}
+
+
+#' Permutation test network
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @param permnum the number of permutations.
+#' @param method the method to create the adjacency matrices.
+#' @param thresh
+#' @param adj.method method that might be needed to create the adjacency matrices.
+#' @param corm.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param tun.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param paired
+#' @details
+#' Details
+#' @return Return.
+#' @examples
+#' perm.test.nw.asada(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,paired=FALSE)
+#' @export
+#'
+perm.test.nw.asada<-function(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,paired=FALSE){
+
+  ##function to create adjacency matrix corresponding to raw data
+  create.graph<-function(A,method,thresh=0.05,adj.method,corm.ebicglasso,tun.ebicglasso){
+
+    if(method=="Spearman"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$P>thresh]<-0
+    }
+
+    if(method=="PCSpearman"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$p.value>thresh]<-0
+    }
+
+    if(method=="Spearman.adj"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+
+      pmat<-correls$P
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+    if(method=="PCSpearman.adj"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+
+      pmat<-correls$p.value
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>0.05]<-0
+    }
+
+
+
+
+    if(method=="DistCorr"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[pvals>thresh]<-0
+    }
+
+
+
+
+    if(method=="DistCorr.adj"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      pmat<-pvals
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+      rownames(pmat)<-colnames(A)
+      colnames(pmat)<-colnames(A)
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+
+    if(method=="EBICglasso"){
+      correls<-cor(A,method=corm.ebicglasso)
+      cm<-EBICglasso(correls,n=dim(A)[1],gamma=tun.ebicglasso)
+      # Keep only correlations with p-value <=thresh; NOT NECESSARY FOR EBICGLASSO, AS VARIABLE SELECTION IS PERFORMED
+      diag(cm)<-0
+      #cm[correls$p.value>thresh]<-0
+    }
+
+
+    if(all(cm==0)){
+      output<-list(cm,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA)
+      names(output)<-c("adjacency matrix","graph","graph communities","graph clustering","graph vertex degrees","graph number of edges","graph number of clusters","graph number of isolated nodes","MST","MST communities","MST clustering","MST vertex degrees","MST number of edges","MST number of clusters","MST number of isolated nodes")
+      return(output)
+    }else{
+
+
+      # Make an Igraph object from this matrix:
+      g<-graph.adjacency(cm,weighted=TRUE, mode="undirected", diag=FALSE)
+
+      # Simplfy the adjacency object
+      g<-simplify(g, remove.multiple=TRUE, remove.loops=TRUE)
+
+      # Colour negative correlation edges as red
+      E(g)[which(E(g)$weight<0)]$color <- "red"
+
+      # Colour positive correlation edges as blue
+      E(g)[which(E(g)$weight>0)]$color <- "blue"
+
+      # Convert edge weights to absolute values
+      # E(g)$weight <- abs(E(g)$weight)
+
+      # Assign names to the graph vertices (optional)
+      V(g)$name <- V(g)$name
+
+
+      # let's see if we have communities here using the
+      # Grivan-Newman algorithm
+      # 1st we calculate the edge betweenness, merges, etc...
+      g.communities <- edge.betweenness.community(g, weights=NULL, directed=FALSE)
+      g.clustering <- make_clusters(g, membership=g.communities$membership)
+      V(g)$color <- g.communities$membership
+
+      # Check the vertex degree, i.e., number of connections to each vertex
+      deg.g<-degree(g)
+
+      ##number of edges
+      edgenum.g<-gsize(g)
+
+
+      ###number of clusters
+      clusnum.g<-length(unique(g.communities$membership))
+
+      ##number of isolated nodes (i.e. nodes with degree 0)
+      numisolnodes.g<-length(which(deg.g==0))
+
+
+      ####MST-based
+
+
+      # Convert the graph adjacency object into a minimum spanning tree based on Prim's algorithm
+      mst<-mst(g, algorithm="prim")
+
+      # let's see if we have communities here using the
+      # Grivan-Newman algorithm
+      # 1st we calculate the edge betweenness, merges, etc...
+      mst.communities <- edge.betweenness.community(mst, weights=NULL, directed=FALSE)
+      mst.clustering <- make_clusters(mst, membership=mst.communities$membership)
+      V(mst)$color <- mst.communities$membership
+
+      # Check the vertex degree, i.e., number of connections to each vertex
+      deg.mst<-degree(mst)
+
+      ##number of edges
+      edgenum.mst<-gsize(mst)
+
+      ###number of clusters
+      clusnum.mst<-length(unique(mst.communities$membership))
+
+      ##number of isolated nodes (i.e. nodes with degree 0)
+      numisolnodes.mst<-length(which(deg.mst==0))
+
+      output<-list(cm,g,g.communities,g.clustering,deg.g,edgenum.g,clusnum.g,numisolnodes.g,mst,mst.communities,mst.clustering,deg.mst,edgenum.mst,clusnum.mst,numisolnodes.mst)
+      names(output)<-c("adjacency matrix","graph","graph communities","graph clustering","graph vertex degrees","graph number of edges","graph number of clusters","Graph number of isolated nodes","MST","MST communities","MST clustering","MST vertex degrees","MST number of edges","MST number of clusters","MST number of isolated nodes")
+      return(output)
+
+    }
+  }
+
+
+
+  ###compute score for original unpermuted raw data
+  graph.A<-create.graph(A,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  graph.B<-create.graph(B,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  value.orig<-diff.num(graph.A,graph.B)
+  names(value.orig)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph Diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST Diff num of isolated nodes")
+
+  if(paired==FALSE){
+
+    D<-rbind(A,B)
+
+    #####function to create permutations from raw data
+    create.permut.unpaired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(nrow(D),replace=FALSE)
+      D.new<-D[s,]
+      A.new<-D.new[1:nrow(A),]
+      B.new<-D.new[(nrow(A)+1):(nrow(D.new)),]
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.unpaired)
+
+  }
+
+
+  if(paired==TRUE){
+
+    #####function to create permutations from raw data
+    create.permut.paired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(c("A","B"),nrow(A),replace=TRUE)
+      A.new<-rbind(A[s=="A",],B[s=="B",])
+      B.new<-rbind(B[s=="A",],A[s=="B",])
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.paired)
+
+  }
+
+
+
+  ##compute score for the permnum permuted data sets
+  value.perm<-array(data=NA,dim=c(permnum,length(value.orig)))
+  for (n in 1:permnum){
+    graph.A.perm<-create.graph(shuffle[[n]][[1]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    graph.B.perm<-create.graph(shuffle[[n]][[2]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    value.perm[n,]<-diff.num(graph.A.perm,graph.B.perm)
+  }
+
+  ###permutation pseudocount p-value
+  pvalue.ecdf<-rep(NA,length(value.orig))
+  pvalue.ecdf.pseudo<-rep(NA,length(value.orig))
+  for (j in 1:length(value.orig)){
+
+    if(all(is.na(value.orig[j])==TRUE)){
+      pvalue.ecdf[j]<-NA
+      pvalue.ecdf.pseudo[j]<-NA
+    }
+
+    else{
+
+      if (all(is.na(value.perm[,j])==FALSE)){
+        num.extr<-sum(value.perm[,j]>=value.orig[j])
+        pvalue.ecdf[j]<-num.extr/permnum
+        pvalue.ecdf.pseudo[j]<-(1+num.extr)/(permnum+1)
+      }else{
+        permnum<-length(na.omit(value.perm[,j]))
+        num.extr<-sum(na.omit(value.perm[,j])>=value.orig[j])
+        pvalue.ecdf[j]<-num.extr/permnum
+        pvalue.ecdf.pseudo[j]<-(1+num.extr)/(permnum+1)
+      }
+
+    }
+
+  }
+  names(pvalue.ecdf)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph Diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST Diff num of isolated nodes")
+  names(pvalue.ecdf.pseudo)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph Diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST Diff num of isolated nodes")
+
+
+  output<-list(graph.A,graph.B,value.orig,value.perm,pvalue.ecdf,pvalue.ecdf.pseudo)
+  names(output)<-c("graph.A","graph.B","test.statistic","test.statistics.perm","pvalue","pvalue.pseudocount")
+
+  return(output)
+
+}
+
+
+
+
+
+####################################
+################## 2.)node-specifc network difference characteristics
+
+
+#' Degree
+#' @description A
+#' @param X
+#' @param Y
+#' @details
+#' One of the methods to compare two networks on their node-specific differences.
+#' @return Return
+#' @examples
+#' degree.inv(X,Y)
+#'
+degree.inv<-function(X,Y){
+
+  if(all(X==0)){
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(A)$weight <- abs(E(A)$weight)
+  }
+
+  if(all(Y==0)){
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(B)$weight <- abs(E(B)$weight)
+  }
+
+  degA<-degree(A)
+  degB<-degree(B)
+
+  output<-abs(degA-degB)
+  names(output)<-colnames(X)
+
+  return(output)
+}
+
+####################
+#' Betweenness
+#' @description A
+#' @param X
+#' @param Y
+#' @details
+#' One of the methods to compare two networks on their node-specific differences.
+#' @return Return
+#' @examples
+#' betweenness.inv(X,Y)
+#'
+betweenness.inv<-function(X,Y){
+
+  if(all(X==0)){
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(A)$weight <- abs(E(A)$weight)
+  }
+
+  if(all(Y==0)){
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(B)$weight <- abs(E(B)$weight)
+  }
+
+  betA<-betweenness(A)
+  betB<-betweenness(B)
+
+  output<-abs(betA-betB)
+  names(output)<-colnames(X)
+
+  return(output)
+}
+
+
+
+
+
+#' Closeness
+#' @description A
+#' @param X
+#' @param Y
+#' @details
+#' One of the methods to compare two networks on their node-specific differences.
+#' @return Return
+#' @examples
+#' closeness.inv(X,Y)
+#'
+closeness.inv<-function(X,Y){
+
+  if(all(X==0)){
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(A)$weight <- abs(E(A)$weight)
+  }
+
+  if(all(Y==0)){
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(B)$weight <- abs(E(B)$weight)
+  }
+
+  cloA<-closeness(A)
+  cloB<-closeness(B)
+
+  output<-abs(cloA-cloB)
+  names(output)<-colnames(X)
+
+  return(output)
+}
+
+
+
+
+
+#' Eigen
+#' @description A
+#' @param X
+#' @param Y
+#' @details
+#' One of the methods to compare two networks on their node-specific differences.
+#' @return Return
+#' @examples
+#' eigcen.inv(X,Y)
+#'
+eigcen.inv<-function(X,Y){
+
+  if(all(X==0)){
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(A)$weight <- abs(E(A)$weight)
+  }
+
+  if(all(Y==0)){
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+  }else{
+    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    # Simplfy the adjacency object
+    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    # Convert edge weights to absolute values
+    E(B)$weight <- abs(E(B)$weight)
+  }
+
+  ecA<-eigen_centrality(A)$vector
+  ecB<-eigen_centrality(B)$vector
+
+  output<-abs(ecA-ecB)
+  names(output)<-colnames(X)
+
+  return(output)
+}
+
+
+
+
+#############################
+#' Permutation test network with node characteristics
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @param permnum the number of permutations.
+#' @param method the method to create the adjacency matrices.
+#' @param thresh
+#' @param adj.method method that might be needed to create the adjacency matrices.
+#' @param corm.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param tun.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param paired
+#' @details
+#' Details
+#' @return Return.
+#' @examples
+#' perm.test.nw.nodes(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,paired=FALSE)
+#' @export
+#'
+perm.test.nw.nodes<-function(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,score.funct,paired=FALSE){
+
+
+
+  ##function to create adjacency matrix corresponding to raw data
+  create.adjacency.matrix<-function(A,method,thresh=0.05,adj.method,corm.ebicglasso,tun.ebicglasso){
+
+    if(method=="Spearman"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$P>thresh]<-0
+    }
+
+    if(method=="PCSpearman"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$p.value>thresh]<-0
+    }
+
+    if(method=="Spearman.adj"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+
+      pmat<-correls$P
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+    if(method=="PCSpearman.adj"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+
+      pmat<-correls$p.value
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>0.05]<-0
+    }
+
+
+
+
+    if(method=="DistCorr"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[pvals>thresh]<-0
+    }
+
+
+
+
+    if(method=="DistCorr.adj"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      pmat<-pvals
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+      rownames(pmat)<-colnames(A)
+      colnames(pmat)<-colnames(A)
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+
+    if(method=="EBICglasso"){
+      correls<-cor(A,method=corm.ebicglasso)
+      cm<-EBICglasso(correls,n=dim(A)[1],gamma=tun.ebicglasso)
+      # Keep only correlations with p-value <=thresh; NOT NECESSARY FOR EBICGLASSO, AS VARIABLE SELECTION IS PERFORMED
+      diag(cm)<-0
+      #cm[correls$p.value>thresh]<-0
+    }
+
+
+
+
+    output<-cm
+    return(output)
+
+  }
+
+
+
+  ###compute score for original unpermuted raw data
+  adj.A<-create.adjacency.matrix(A,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  adj.B<-create.adjacency.matrix(B,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  value.orig<-score.funct(adj.A,adj.B)
+
+
+  if(paired==FALSE){
+
+    D<-rbind(A,B)
+
+    #####function to create permutations from raw data
+    create.permut.unpaired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(nrow(D),replace=FALSE)
+      D.new<-D[s,]
+      A.new<-D.new[1:nrow(A),]
+      B.new<-D.new[(nrow(A)+1):(nrow(D.new)),]
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.unpaired)
+
+  }
+
+
+  if(paired==TRUE){
+
+    #####function to create permutations from raw data
+    create.permut.paired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(c("A","B"),nrow(A),replace=TRUE)
+      A.new<-rbind(A[s=="A",],B[s=="B",])
+      B.new<-rbind(B[s=="A",],A[s=="B",])
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.paired)
+
+  }
+
+
+
+  ##compute score for the permnum permuted data sets
+  value.perm<-array(data=NA,dim=c(permnum,length(value.orig)))
+  for (n in 1:permnum){
+    adj.A.perm<-create.adjacency.matrix(shuffle[[n]][[1]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    adj.B.perm<-create.adjacency.matrix(shuffle[[n]][[2]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    value.perm[n,]<-score.funct(adj.A.perm,adj.B.perm)
+  }
+
+  ###permutation pseudocount p-value
+  pvalue.ecdf<-rep(NA,length(value.orig))
+  pvalue.ecdf.pseudo<-rep(NA,length(value.orig))
+
+  names(pvalue.ecdf)<-names(value.orig)
+  names(pvalue.ecdf.pseudo)<-names(value.orig)
+
+  for(i in 1:length(value.orig)){
+    num.extr<-sum(value.perm[,i]>=value.orig[i])
+    pvalue.ecdf[i]<-num.extr/permnum
+    pvalue.ecdf.pseudo[i]<-(1+num.extr)/(permnum+1)
+  }
+
+
+
+
+  output<-list(adj.A,adj.B,value.orig,value.perm,pvalue.ecdf,pvalue.ecdf.pseudo) #,p.ecdf,p.ecdf.pseudo)
+  names(output)<-c("adjancency.matrix.A","adjacency.matrix.B","test.statistic","test.statistics.perm","pvalue","pvalue.pseudocount")
+
+  return(output)
+
+}
+
+
+
+
+#########################################
+####################################################
+##########################3.) edge-specific network difference characteristics
+
+
+
+### edge strength
+
+##a. "considers directions (signs) of correlations"
+
+#' Edge with direction
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their edge-specific differneces.
+#' @return Return
+#' @examples
+#' edge.inv.direc(A,B)
+edge.inv.direc<-function(A,B){
+  output<-abs(A-B)
+  rownames(output)<-rownames(A)
+  colnames(output)<-colnames(A)
+  return(output)
+}
+
+##b. "does not consider directions (signs) of correlations"
+#' Edge without direction
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @details
+#' One of the methods to compare two networks on their edge-specific differneces.
+#' @return Return
+#' @examples
+#' edge.inv(A,B)
+edge.inv<-function(A,B){
+  output<-abs(abs(A)-abs(B))
+  rownames(output)<-rownames(A)
+  colnames(output)<-colnames(A)
+  return(output)
+}
+
+
+
+
+################################################
+
+#' Permutation test network with edge characteristics
+#' @description A
+#' @param A a matrix.
+#' @param B a matrix.
+#' @param permnum the number of permutations.
+#' @param method the method to create the adjacency matrices.
+#' @param thresh
+#' @param adj.method method that might be needed to create the adjacency matrices.
+#' @param corm.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param tun.ebicglasso method that might be needed to create the adjacency matrices.
+#' @param paired
+#' @details
+#' Details
+#' @return Return.
+#' @examples
+#' perm.test.nw.edges(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,paired=FALSE)
+#' @export
+#'
+perm.test.nw.edges<-function(A,B,permnum,method,thresh,adj.method,corm.ebicglasso,tun.ebicglasso,score.funct,paired=FALSE){
+
+  ##function to create adjacency matrix corresponding to raw data
+  create.adjacency.matrix<-function(A,method,thresh=0.05,adj.method,corm.ebicglasso,tun.ebicglasso){
+
+    if(method=="Spearman"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$P>thresh]<-0
+    }
+
+    if(method=="PCSpearman"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[correls$p.value>thresh]<-0
+    }
+
+    if(method=="Spearman.adj"){
+      correls<-rcorr(as.matrix(A),type="spearman")
+      cm<-correls$r
+
+      pmat<-correls$P
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+    if(method=="PCSpearman.adj"){
+      correls<-pcor(as.matrix(A),method="spearman")
+      cm<-correls$estimate
+
+      pmat<-correls$p.value
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>0.05]<-0
+    }
+
+
+
+
+    if(method=="DistCorr"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      # Keep only correlations with p-value <=thresh
+      diag(cm)<-0
+      cm[pvals>thresh]<-0
+    }
+
+
+
+
+    if(method=="DistCorr.adj"){
+      A<-as.matrix(A)
+
+      cm<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          cm[i,j]<-dcor(A[,i],A[,j],index=1.0)
+        }}
+      rownames(cm)<-colnames(A)
+      colnames(cm)<-colnames(A)
+
+      ##compute p-values based on 10000 permutations
+      pvals<-array(data=NA,dim=c(dim(A)[2],dim(A)[2]))
+      for(i in 1:dim(A)[2]){
+        for(j in 1:dim(A)[2]){
+          set.seed(24)
+          pvals[i,j]<-dcor.test(A[,i],A[,j],index=1.0,R=10000)$p.value
+        }}
+      rownames(pvals)<-colnames(A)
+      colnames(pvals)<-colnames(A)
+
+      pmat<-pvals
+      ltri<-lower.tri(pmat)
+      utri<-upper.tri(pmat)
+      pmat[ltri]<-p.adjust(pmat[ltri], method = adj.method)
+      pmat[utri]<-t(pmat)[utri]
+      rownames(pmat)<-colnames(A)
+      colnames(pmat)<-colnames(A)
+
+      # Keep only correlations with adjusted p-value <=thresh
+      diag(cm)<-0
+      cm[pmat>thresh]<-0
+    }
+
+
+    if(method=="EBICglasso"){
+      correls<-cor(A,method=corm.ebicglasso)
+      cm<-EBICglasso(correls,n=dim(A)[1],gamma=tun.ebicglasso)
+      # Keep only correlations with p-value <=thresh; NOT NECESSARY FOR EBICGLASSO, AS VARIABLE SELECTION IS PERFORMED
+      diag(cm)<-0
+      #cm[correls$p.value>thresh]<-0
+    }
+
+
+
+
+    output<-cm
+    return(output)
+
+  }
+
+
+
+  ###compute score for original unpermuted raw data
+  adj.A<-create.adjacency.matrix(A,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  adj.B<-create.adjacency.matrix(B,method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+  value.orig<-score.funct(adj.A,adj.B)
+
+
+  if(paired==FALSE){
+
+    D<-rbind(A,B)
+
+    #####function to create permutations from raw data
+    create.permut.unpaired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(nrow(D),replace=FALSE)
+      D.new<-D[s,]
+      A.new<-D.new[1:nrow(A),]
+      B.new<-D.new[(nrow(A)+1):(nrow(D.new)),]
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.unpaired)
+
+  }
+
+
+  if(paired==TRUE){
+
+    #####function to create permutations from raw data
+    create.permut.paired<-function(seedex){
+      set.seed(seedex)
+      s<-sample(c("A","B"),nrow(A),replace=TRUE)
+      A.new<-rbind(A[s=="A",],B[s=="B",])
+      B.new<-rbind(B[s=="A",],A[s=="B",])
+      output<-list(A.new,B.new)
+      return(output)
+    }
+
+    ##create permutations for raw data
+    shuffle <- lapply(1:permnum, create.permut.paired)
+
+  }
+
+
+
+  ##compute score for the permnum permuted data sets
+  value.perm<-array(data=NA,dim=c(permnum,dim(adj.A)))
+  for (n in 1:permnum){
+    adj.A.perm<-create.adjacency.matrix(shuffle[[n]][[1]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    adj.B.perm<-create.adjacency.matrix(shuffle[[n]][[2]],method=method,thresh=thresh,adj.method=adj.method,corm.ebicglasso=corm.ebicglasso,tun.ebicglasso=tun.ebicglasso)
+    value.perm[n,,]<-score.funct(adj.A.perm,adj.B.perm)
+  }
+
+  ###permutation pseudocount p-value
+  pvalue.ecdf<-array(data=NA,dim=dim(value.orig),dimnames=list(rownames(value.orig),colnames(value.orig)))
+  pvalue.ecdf.pseudo<-array(data=NA,dim=dim(value.orig),dimnames=list(rownames(value.orig),colnames(value.orig)))
+
+  for(i in 1:dim(value.orig)[1]){
+    for(j in 1:dim(value.orig)[2]){
+      num.extr<-sum(value.perm[,i,j]>=value.orig[i,j])
+      pvalue.ecdf[i,j]<-num.extr/permnum
+      pvalue.ecdf.pseudo[i,j]<-(1+num.extr)/(permnum+1)
+    }
+  }
+
+  p.ecdf<-data.frame(var1=rownames(pvalue.ecdf)[row(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
+                     var2=colnames(pvalue.ecdf)[col(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
+                     pvalue=pvalue.ecdf[upper.tri(pvalue.ecdf)])
+
+
+  p.ecdf.pseudo<-data.frame(var1=rownames(pvalue.ecdf.pseudo)[row(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
+                            var2=colnames(pvalue.ecdf.pseudo)[col(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
+                            pvalue=pvalue.ecdf.pseudo[upper.tri(pvalue.ecdf.pseudo)])
+
+
+  output<-list(adj.A,adj.B,value.orig,value.perm,pvalue.ecdf,pvalue.ecdf.pseudo,p.ecdf,p.ecdf.pseudo)
+  names(output)<-c("adjancency.matrix.A","adjacency.matrix.B","test.statistic","test.statistics.perm","pvalue","pvalue.pseudocount","pvalue.summ","pvalue.pseudocount.summ")
+
+  return(output)
+
+}
+
