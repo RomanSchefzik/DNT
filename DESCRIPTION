@@ -1,12 +1,11 @@
 Package: DNT
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Differential network testing
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Leonie Boland and Roman Schefzik
+Maintainer: Roman Schefzik <roman.schefzik@medma.uni-heidelberg.de>
+Description: The package provides functions to test for differences between two statistical networks based on permutation tests. There are various options for network estimation and network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered. 
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
