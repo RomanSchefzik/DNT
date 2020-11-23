@@ -12,7 +12,9 @@ Please make sure that you have the latest version of R installed.
 
 To install the DNT package, run the following:  
 `install.packages("remotes")` 
+
 `library(remotes)`
+
 `remotes::install_github("RomanSchefzik/DNT")` 
 
 The DNT package can then be loaded using  
