@@ -17,5 +17,4 @@ One of the methods to compare two networks on their node-specific differences.
 }
 \examples{
 eigen.inv(X,Y)
-
 }

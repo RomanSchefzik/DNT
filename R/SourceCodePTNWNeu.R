@@ -21,8 +21,10 @@ create.adjacency.matrix<-function(A,methodlist,thresh=0.05){
   stopifnot("A needs to be a tibble or a matrix" = class(A)==c("tbl_df", "tbl", "data.frame")||class(A)==c("matrix","array"),
             "The matrix A needs to have more than 4 rows" = nrow(A)>4,
             "The matrix A needs to have at least one column" = ncol(A)>=1,
-            "Methodlist needs to be a list of Strings with at least one element" = class(methodlist)=="list" && all(lapply(methodlist,class) == "character") && length(methodlist)>=1,
-            "For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' two extra methods are needed" =
+            "Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)" =
+                    class(methodlist)=="list" && length(methodlist)>=1 &&
+                    (all(lapply(methodlist,class)=="character") || methodlist[[1]]=="EBICglasso" && class(methodlist[[2]])=="character" && (class(methodlist[[3]])=="numeric"||class(methodlist[[3]])=="integer")),
+            "For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed" =
                     (stringr::str_detect(methodlist[[1]], "\\.adj") == FALSE && length(methodlist)>=1)
                     || (stringr::str_detect(methodlist[[1]], "\\.adj") && length(methodlist)>=2)
                     || (methodlist[[1]] == "EBICglasso" && length(methodlist)>=3),
@@ -271,6 +273,7 @@ create.graph<-function(A,methodlist,thresh=0.05){
 #' @return The frobenius metric of the two adjacency matrices \code{A} and \code{B}.
 #' @examples
 #' frobenius.metric(matrix(3,2), matrix(2,2))
+#' @export
 #'
 frobenius.metric<-function(A,B){
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
@@ -289,6 +292,7 @@ frobenius.metric<-function(A,B){
 #' @return The Maximum metric of the two adjacency matrices \code{A} and \code{B}.
 #' @examples
 #' max.metr(matrix(3,2), matrix(2,2))
+#' @export
 #'
 max.metr<-function(A,B){
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
@@ -308,6 +312,7 @@ max.metr<-function(A,B){
 #' @return The spectral distance of the two adjacency matrices \code{A} and \code{B}.
 #' @examples
 #' spec.dist(matrix(3,2), matrix(2,2))
+#' @export
 #'
 spec.dist<-function(A,B){
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
@@ -327,6 +332,7 @@ spec.dist<-function(A,B){
 #' @return The global strength of the two adjacency matrices \code{A} and \code{B}.
 #' @examples
 #' global.str(matrix(3,2), matrix(2,2))
+#' @export
 #'
 global.str<-function(A,B){
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
@@ -349,6 +355,8 @@ global.str<-function(A,B){
 #' minimum spanning tree.
 #' @examples
 #' diff.num(create.graph(A, list("Spearman")),create.graph(B, list("Spearman")))
+#' @export
+#'
 diff.num<-function(A,B){
 
   stopifnot("A and B need to be adjacency matrices." = class(A[[1]])==c("matrix","array") && class(B[[1]])==c("matrix","array")
@@ -394,6 +402,7 @@ diff.num<-function(A,B){
 #' @return A vector of the differneces of the degrees of the same nodes in two different networks.
 #' @examples
 #' degree.inv(X,Y)
+#' @export
 #'
 degree.inv<-function(X,Y){
 
@@ -441,6 +450,7 @@ degree.inv<-function(X,Y){
 #' @return Return
 #' @examples
 #' betweenness.inv(X,Y)
+#' @export
 #'
 betweenness.inv<-function(X,Y){
 
@@ -488,6 +498,7 @@ betweenness.inv<-function(X,Y){
 #' @return Return
 #' @examples
 #' closeness.inv(X,Y)
+#' @export
 #'
 closeness.inv<-function(X,Y){
 
@@ -534,6 +545,7 @@ closeness.inv<-function(X,Y){
 #' @return Return
 #' @examples
 #' eigen.inv(X,Y)
+#' @export
 #'
 eigen.inv<-function(X,Y){
 
@@ -583,6 +595,8 @@ eigen.inv<-function(X,Y){
 #' @return Return
 #' @examples
 #' edge.inv.direc(A,B)
+#' @export
+#'
 edge.inv.direc<-function(A,B){
 
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
@@ -607,6 +621,8 @@ edge.inv.direc<-function(A,B){
 #' @return Return
 #' @examples
 #' edge.inv(A,B)
+#' @export
+#'
 edge.inv<-function(A,B){
 
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&

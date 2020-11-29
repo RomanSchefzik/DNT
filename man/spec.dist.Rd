@@ -20,5 +20,4 @@ One of the methods to compare two networks on their overall network characterist
 }
 \examples{
 spec.dist(matrix(3,2), matrix(2,2))
-
 }

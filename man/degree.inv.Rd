@@ -20,5 +20,4 @@ One of the methods to compare two networks on their node-specific differences.
 }
 \examples{
 degree.inv(X,Y)
-
 }

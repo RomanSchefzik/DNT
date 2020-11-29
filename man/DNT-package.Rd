@@ -4,9 +4,8 @@
 \name{DNT-package}
 \alias{DNT}
 \alias{DNT-package}
-\title{DNT: What the Package Does (Title Case)}
+\title{DNT: Differential network testing}
 \description{
-More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+The package provides functions to test for differences between two statistical networks based on permutation tests. There are various options for network estimation and network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered.
 }
 \keyword{internal}
