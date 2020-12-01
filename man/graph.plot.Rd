@@ -39,7 +39,7 @@ graph.plot(
 
 \item{tSize}{the size of the names inside the vertices.}
 
-\item{filename}{the directory where the file shall be saved.}
+\item{directory}{the directory where the file shall be saved.}
 }
 \value{
 

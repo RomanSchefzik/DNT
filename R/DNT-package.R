@@ -13,5 +13,9 @@
 #' @importFrom stats p.adjust
 #' @importFrom stats cor
 #' @importFrom stats na.omit
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom graphics mtext
+#' @importFrom graphics par
 ## usethis namespace: end
 NULL

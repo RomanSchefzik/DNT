@@ -11,13 +11,13 @@
 #' @param layout the layout of the networks.
 #' @param vSize the size of the vertices.
 #' @param tSize the size of the names inside the vertices.
-#' @param filename the directory where the file shall be saved.
+#' @param directory the directory where the file shall be saved.
 #' @details
 #' The graphs are plotted with the same layout and other plot characteristics so that the two graphs are easy to
 #' compare. The left network is the Survivors Admission and the right one the Survivor Event.
 #' @return
 #' @examples
-#' graph.plot(x1,x2, list("Spearman), caption = "Spearman")
+#' graph.plot(x1,x2, list("Spearman), caption = "Spearman", directory)
 #' @export
 #'
 graph.plot <- function(A, B, methodlist, cluster = TRUE, negcol = "red", poscol= "blue", caption, layout = layout.fruchterman.reingold, vSize = 16, tSize = 0.8, directory){
