@@ -18,14 +18,16 @@
 #'
 create.adjacency.matrix<-function(A,methodlist,thresh=0.05){
 
-  stopifnot("A needs to be a tibble or a matrix" = class(A)==c("tbl_df", "tbl", "data.frame")||class(A)==c("matrix","array"),
+  stopifnot("A needs to be a tibble or a matrix" = (length(class(A)) == 3 && class(A)==c("tbl_df", "tbl", "data.frame")) ||
+                                                   (length(class(A)) == 2 && class(A)==c("matrix","array")),
             "The matrix A needs to have more than 4 rows" = nrow(A)>4,
             "The matrix A needs to have at least one column" = ncol(A)>=1,
             "Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)" =
-                    class(methodlist)=="list" && length(methodlist)>=1 &&
-                    (all(lapply(methodlist,class)=="character") || methodlist[[1]]=="EBICglasso" && class(methodlist[[2]])=="character" && (class(methodlist[[3]])=="numeric"||class(methodlist[[3]])=="integer")),
+              class(methodlist)=="list" && length(methodlist)>=1 && (length(methodlist)==1 || class(methodlist[[2]]) == "character")
+              || methodlist[[1]]=="EBICglasso" && class(methodlist[[2]])=="character" && (class(methodlist[[3]])=="numeric"
+              ||class(methodlist[[3]])=="integer"),
             "For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed" =
-                    (stringr::str_detect(methodlist[[1]], "\\.adj") == FALSE && length(methodlist)>=1)
+                    (stringr::str_detect(methodlist[[1]], "\\.adj") == FALSE && length(methodlist)>=1) && methodlist[[1]] != "EBICglasso"
                     || (stringr::str_detect(methodlist[[1]], "\\.adj") && length(methodlist)>=2)
                     || (methodlist[[1]] == "EBICglasso" && length(methodlist)>=3),
             "Thresh needs to be a non-negative number" = class(thresh)=="numeric" && thresh>=0)
@@ -150,7 +152,7 @@ create.adjacency.matrix<-function(A,methodlist,thresh=0.05){
     cm<-EBICglasso(correls,n=dim(A)[1],gamma=tun.ebicglasso)
     # Keep only correlations with p-value <=thresh; NOT NECESSARY FOR EBICGLASSO, AS VARIABLE SELECTION IS PERFORMED
     diag(cm)<-0
-    cm[correls$p.value>thresh]<-0
+    #cm[correls$p.value>thresh]<-0
   }
 
   output<-cm
@@ -291,10 +293,10 @@ frobenius.metric<-function(A,B){
 #' One of the methods to compare two networks on their overall network characteristics.
 #' @return The Maximum metric of the two adjacency matrices \code{A} and \code{B}.
 #' @examples
-#' max.metr(matrix(3,2), matrix(2,2))
+#' maximum.metric(matrix(3,2), matrix(2,2))
 #' @export
 #'
-max.metr<-function(A,B){
+maximum.metric<-function(A,B){
   stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
                                                        (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
             "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
@@ -346,7 +348,7 @@ global.str<-function(A,B){
 
 ##########################characteristics used by Asada et al. (2016)
 
-#' Differneces between two graphs
+#' Differences between two graphs
 #' @description The method calculates differences between two graphs.
 #' @param A,B are results from the function create.graph.
 #' @details
@@ -354,10 +356,10 @@ global.str<-function(A,B){
 #' @return A list of the differences in the number of edges, clusters and isolated nodes of the graph and the corresponding
 #' minimum spanning tree.
 #' @examples
-#' diff.num(create.graph(A, list("Spearman")),create.graph(B, list("Spearman")))
+#' number.differences(create.graph(A, list("Spearman")),create.graph(B, list("Spearman")))
 #' @export
 #'
-diff.num<-function(A,B){
+number.differences<-function(A,B){
 
   stopifnot("A and B need to be adjacency matrices." = class(A[[1]])==c("matrix","array") && class(B[[1]])==c("matrix","array")
                                                        && nrow(A[[1]])==ncol(A[[1]]) && nrow(B[[1]])==ncol(B[[1]]),
@@ -664,11 +666,11 @@ perm.test.nw <- function(A, B, permnum, methodlist, thresh, score.funct, paired=
             "paired needs to be a boolean." = paired==TRUE || paired==FALSE)
 
   ###compute score for original unpermuted raw data
-  if(identical(score.funct, diff.num)){
+  if(identical(score.funct, number.differences)){
     ###compute score for original unpermuted raw data
     graph.A<-create.graph(A,methodlist=methodlist,thresh=thresh)
     graph.B<-create.graph(B,methodlist=methodlist,thresh=thresh)
-    value.orig<-diff.num(graph.A,graph.B)
+    value.orig<-number.differences(graph.A,graph.B)
     names(value.orig)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph Diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST Diff num of isolated nodes")
 
   }else{
@@ -716,7 +718,7 @@ perm.test.nw <- function(A, B, permnum, methodlist, thresh, score.funct, paired=
   }
 
 
-  if(any(identical(score.funct, frobenius.metric),identical(score.funct, max.metr),identical(score.funct, spec.dist),identical(score.funct, global.str))){
+  if(any(identical(score.funct, frobenius.metric),identical(score.funct, maximum.metric),identical(score.funct, spec.dist),identical(score.funct, global.str))){
     ##compute score for the permnum permuted data sets
     value.perm<-rep(NA,permnum)
     for (n in 1:permnum){
@@ -736,13 +738,13 @@ perm.test.nw <- function(A, B, permnum, methodlist, thresh, score.funct, paired=
   }
 
 
-  if(identical(score.funct,diff.num)){
+  if(identical(score.funct,number.differences)){
     ##compute score for the permnum permuted data sets
     value.perm<-array(data=NA,dim=c(permnum,length(value.orig)))
     for (n in 1:permnum){
       graph.A.perm<-create.graph(shuffle[[n]][[1]],methodlist=methodlist,thresh=thresh)
       graph.B.perm<-create.graph(shuffle[[n]][[2]],methodlist=methodlist,thresh=thresh)
-      value.perm[n,]<-diff.num(graph.A.perm,graph.B.perm)
+      value.perm[n,]<-number.differences(graph.A.perm,graph.B.perm)
     }
 
     ###permutation pseudocount p-value

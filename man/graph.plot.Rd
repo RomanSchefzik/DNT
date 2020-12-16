@@ -8,14 +8,13 @@ graph.plot(
   A,
   B,
   methodlist,
+  thresh = 0.05,
   cluster = TRUE,
   negcol = "red",
   poscol = "blue",
-  caption,
   layout = layout.fruchterman.reingold,
   vSize = 16,
-  tSize = 0.8,
-  directory
+  tSize = 0.8
 )
 }
 \arguments{
@@ -25,21 +24,19 @@ graph.plot(
 
 \item{methodlist}{the methods used to create the adjacency matrices.}
 
+\item{thresh}{the threshold under which the values of the correlations are relevant.}
+
 \item{cluster}{is the boolean value that states if the graphs shall be divided in their clusters or not.}
 
 \item{negcol}{the color of the edges with a negative correlation value.}
 
 \item{poscol}{the color of the edges with a positive correlation value.}
 
-\item{caption}{the title of the pdf-file.}
-
 \item{layout}{the layout of the networks.}
 
 \item{vSize}{the size of the vertices.}
 
 \item{tSize}{the size of the names inside the vertices.}
-
-\item{directory}{the directory where the file shall be saved.}
 }
 \value{
 

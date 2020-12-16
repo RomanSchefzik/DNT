@@ -4,14 +4,13 @@
 #' @param A a matrix.
 #' @param B a matrix.
 #' @param methodlist the methods used to create the adjacency matrices.
+#' @param thresh the threshold under which the values of the correlations are relevant.
 #' @param cluster is the boolean value that states if the graphs shall be divided in their clusters or not.
 #' @param negcol the color of the edges with a negative correlation value.
 #' @param poscol the color of the edges with a positive correlation value.
-#' @param caption the title of the pdf-file.
 #' @param layout the layout of the networks.
 #' @param vSize the size of the vertices.
 #' @param tSize the size of the names inside the vertices.
-#' @param directory the directory where the file shall be saved.
 #' @details
 #' The graphs are plotted with the same layout and other plot characteristics so that the two graphs are easy to
 #' compare. The left network is the Survivors Admission and the right one the Survivor Event.
@@ -20,19 +19,19 @@
 #' graph.plot(x1,x2, list("Spearman), caption = "Spearman", directory)
 #' @export
 #'
-graph.plot <- function(A, B, methodlist, cluster = TRUE, negcol = "red", poscol= "blue", caption, layout = layout.fruchterman.reingold, vSize = 16, tSize = 0.8, directory){
+graph.plot <- function(A, B, methodlist, thresh = 0.05, cluster = TRUE, negcol = "red", poscol= "blue", layout = layout.fruchterman.reingold, vSize = 16, tSize = 0.8){
 
   stopifnot("cluster needs be boolean" = cluster==TRUE || cluster==FALSE,
             "negcol and poscol need to be strings" = class(negcol)=="character" && class(poscol)=="character",
-            "caption needs to be a string" = class(caption)=="character",
+            #"caption needs to be a string" = class(caption)=="character",
             "layout needs to be a layout-function" = class(layout)=="function",
             "vSize and tSize need to be positive numbers" = (class(vSize)=="numeric" || class(vSize)=="integer") &&
                                                             (class(tSize)=="numeric" || class(tSize)=="integer"),
             "vSize needs to be 20 times bigger than tSize to have a good relation between the names and the vertices" = tSize*20<=vSize,
             "directory needs to be a string" = class(directory)=="character")
 
-  g1 <- create.Igraphclustering(A, methodlist)
-  g2 <- create.Igraphclustering(B, methodlist)
+  g1 <- create.Igraphclustering(A, methodlist, thresh)
+  g2 <- create.Igraphclustering(B, methodlist, thresh)
 
   E(g1[[2]])[which(E(g1[[2]])$weight<0)]$color <- negcol
   E(g1[[2]])[which(E(g1[[2]])$weight>0)]$color <- poscol
@@ -43,8 +42,6 @@ graph.plot <- function(A, B, methodlist, cluster = TRUE, negcol = "red", poscol=
   E(g1[[2]])$weight <- abs(E(g1[[2]])$weight)
   E(g2[[2]])$weight <- abs(E(g2[[2]])$weight)
 
-  filename <- stringr::str_glue(directory, ".pdf", sep ="")
-  pdf(file=filename,width=15,height=8)#,pointsize=15)
 
   par(mfrow=c(1,2),oma=c(0,0,2,0))
 
@@ -109,10 +106,9 @@ graph.plot <- function(A, B, methodlist, cluster = TRUE, negcol = "red", poscol=
 
   }
 
-  #caption <- methodlist[[1]]
+  caption <- methodlist[[1]]
   mtext(caption,outer=TRUE,cex=1.5)
 
-  dev.off()
 }
 
 #' Create cluster of an Igraph
@@ -133,6 +129,9 @@ create.Igraphclustering <- function(A, methodlist, thresh = 0.05){
 
   cm.x1 <- create.adjacency.matrix(A, methodlist, thresh)
 
+  if(all(cm.x1==0) == TRUE){
+    stop()
+  }
   # Make an Igraph object from this matrix:
   g.x1<-graph.adjacency(cm.x1,weighted=TRUE, mode="undirected", diag=FALSE)
 
