@@ -9,9 +9,13 @@ graph.plot(
   B,
   methodlist,
   thresh = 0.05,
+  admission = TRUE,
+  event = TRUE,
   cluster = TRUE,
   negcol = "red",
   poscol = "blue",
+  multiplier = 4,
+  curved = TRUE,
   layout = layout.fruchterman.reingold,
   vSize = 16,
   tSize = 0.8
@@ -26,11 +30,17 @@ graph.plot(
 
 \item{thresh}{the threshold under which the values of the correlations are relevant.}
 
+\item{admission}{Boolean value that specifies if the Survivors Admission shall be plotted.}
+
+\item{event}{Boolean value that specifies if the Survivors Event shall be plotted.}
+
 \item{cluster}{is the boolean value that states if the graphs shall be divided in their clusters or not.}
 
 \item{negcol}{the color of the edges with a negative correlation value.}
 
 \item{poscol}{the color of the edges with a positive correlation value.}
+
+\item{multiplier}{the number multiplied with the edge weight to get a bigger differnece between the thick and thin lines.}
 
 \item{layout}{the layout of the networks.}
 

@@ -5,6 +5,7 @@
 # roxygen namespace tags. Modify with care!
 ## usethis namespace: start
 #' @import igraph
+#' @import shiny
 #' @importFrom Hmisc rcorr
 #' @importFrom ppcor pcor
 #' @importFrom energy dcor
