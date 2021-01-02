@@ -147,29 +147,23 @@ graph.plot <- function(A, B, methodlist, thresh = 0.05, admission = TRUE, event 
 #' create.Igraphclustering(x1, list("Spearman"))
 #' @export
 #'
-create.Igraphclustering <- function(A, methodlist, thresh = 0.05){
-
+create.Igraphclustering<-function (A, methodlist, thresh = 0.05) 
+{
   cm.x1 <- create.adjacency.matrix(A, methodlist, thresh)
-
-  if(all(cm.x1==0) == TRUE){
+  if (all(cm.x1 == 0) == TRUE) {
     numbervertices <- length(A)
-    g.x1 <- make_empty_graph(n = numbervertices)
-    V(g.x1)$name <- names(A)
+    g.x1 <- igraph::make_empty_graph(n = numbervertices)
+    igraph::V(g.x1)$name <- names(A)
     g.clustering.x1 <- NULL
   }
-  else{
-    # Make an Igraph object from this matrix:
-    g.x1<-graph.adjacency(cm.x1,weighted=TRUE, mode="undirected", diag=FALSE)
-
-    # Simplfy the adjacency object
-    g.x1<-simplify(g.x1, remove.multiple=TRUE, remove.loops=TRUE)
-
-    # let's see if we have communities here using the
-    # Grivan-Newman algorithm
-    # 1st we calculate the edge betweenness, merges, etc...
-    g.communities.x1 <- edge.betweenness.community(g.x1, weights=NULL, directed=FALSE)
-    g.clustering.x1 <- make_clusters(g.x1, membership=g.communities.x1$membership)
-    V(g.x1)$color <- g.communities.x1$membership
+  else {
+    g.x1 <- igraph::graph.adjacency(cm.x1, weighted = TRUE, mode = "undirected", 
+                            diag = FALSE)
+    g.x1 <- igraph::simplify(g.x1, remove.multiple = TRUE, remove.loops = TRUE)
+    g.communities.x1 <- igraph::edge.betweenness.community(g.x1, 
+                                                   weights = NULL, directed = FALSE)
+    g.clustering.x1 <- igraph::make_clusters(g.x1, membership = g.communities.x1$membership)
+    igraph::V(g.x1)$color <- g.communities.x1$membership
   }
   list(g.clustering.x1, g.x1)
 }
