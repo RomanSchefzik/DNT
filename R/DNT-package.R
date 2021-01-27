@@ -7,9 +7,9 @@
 #' @import igraph
 #' @import shiny
 #' @importFrom Hmisc rcorr
-#' @importFrom ppcor pcor
 #' @importFrom energy dcor
 #' @importFrom energy dcor.test
+#' @importFrom ppcor pcor
 #' @importFrom qgraph EBICglasso
 #' @importFrom stats p.adjust
 #' @importFrom stats cor
@@ -18,5 +18,6 @@
 #' @importFrom grDevices pdf
 #' @importFrom graphics mtext
 #' @importFrom graphics par
+#' @importFrom utils read.csv2
 ## usethis namespace: end
 NULL

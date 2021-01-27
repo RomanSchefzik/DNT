@@ -4,7 +4,15 @@
 \alias{perm.test.nw}
 \title{Permutation test network}
 \usage{
-perm.test.nw(A, B, permnum, methodlist, thresh, score.funct, paired = FALSE)
+perm.test.nw(
+  A,
+  B,
+  permnum,
+  methodlist,
+  thresh = 0.05,
+  score.funct,
+  paired = FALSE
+)
 }
 \arguments{
 \item{A}{a matrix.}

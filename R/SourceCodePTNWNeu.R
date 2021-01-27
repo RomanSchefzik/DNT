@@ -16,20 +16,20 @@
 #' create.adjacency.matrix(A,list("DistCorr.adj", "holm"))
 #' @export
 #'
-create.adjacency.matrix<-function (A, methodlist, thresh = 0.05) 
+create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
   {
-    stopifnot(`A needs to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")), `The matrix A needs to have more than 4 rows` = nrow(A) > 
-                4, `The matrix A needs to have at least one column` = ncol(A) >= 
-                1, `Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)` = class(methodlist) == 
-                "list" && length(methodlist) >= 1 && (length(methodlist) == 
-                                                        1 || class(methodlist[[2]]) == "character") || 
-                methodlist[[1]] == "EBICglasso" && class(methodlist[[2]]) == 
-                "character" && (class(methodlist[[3]]) == "numeric" || 
-                                  class(methodlist[[3]]) == "integer"), `For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed` = (stringr::str_detect(methodlist[[1]], 
-                                                                                                                                                                                                                                                     "\\.adj") == FALSE && length(methodlist) >= 1) && 
-                methodlist[[1]] != "EBICglasso" || (stringr::str_detect(methodlist[[1]], 
-                                                                        "\\.adj") && length(methodlist) >= 2) || (methodlist[[1]] == 
-                                                                                                                    "EBICglasso" && length(methodlist) >= 3), `Thresh needs to be a non-negative number` = class(thresh) == 
+    stopifnot(`A needs to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")), `The matrix A needs to have more than 4 rows` = nrow(A) >
+                4, `The matrix A needs to have at least one column` = ncol(A) >=
+                1, `Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)` = class(methodlist) ==
+                "list" && length(methodlist) >= 1 && (length(methodlist) ==
+                                                        1 || class(methodlist[[2]]) == "character") ||
+                methodlist[[1]] == "EBICglasso" && class(methodlist[[2]]) ==
+                "character" && (class(methodlist[[3]]) == "numeric" ||
+                                  class(methodlist[[3]]) == "integer"), `For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed` = (stringr::str_detect(methodlist[[1]],
+                                                                                                                                                                                                                                                     "\\.adj") == FALSE && length(methodlist) >= 1) &&
+                methodlist[[1]] != "EBICglasso" || (stringr::str_detect(methodlist[[1]],
+                                                                        "\\.adj") && length(methodlist) >= 2) || (methodlist[[1]] ==
+                                                                                                                    "EBICglasso" && length(methodlist) >= 3), `Thresh needs to be a non-negative number` = class(thresh) ==
                 "numeric" && thresh >= 0)
     method <- methodlist[[1]]
     if (method == "Spearman") {
@@ -51,7 +51,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
       ltri <- lower.tri(pmat)
       utri <- upper.tri(pmat)
       adj.method <- methodlist[[2]]
-      pmat[ltri] <- p.adjust(pmat[ltri], method = adj.method)
+      pmat[ltri] <- stats::p.adjust(pmat[ltri], method = adj.method)
       pmat[utri] <- t(pmat)[utri]
       diag(cm) <- 0
       cm[pmat > thresh] <- 0
@@ -63,7 +63,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
       ltri <- lower.tri(pmat)
       utri <- upper.tri(pmat)
       adj.method <- methodlist[[2]]
-      pmat[ltri] <- p.adjust(pmat[ltri], method = adj.method)
+      pmat[ltri] <- stats::p.adjust(pmat[ltri], method = adj.method)
       pmat[utri] <- t(pmat)[utri]
       diag(cm) <- 0
       cm[pmat > thresh] <- 0
@@ -82,7 +82,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
       for (i in 1:dim(A)[2]) {
         for (j in 1:dim(A)[2]) {
           set.seed(24)
-          pvals[i, j] <- energy::dcor.test(A[, i], A[, j], index = 1, 
+          pvals[i, j] <- energy::dcor.test(A[, i], A[, j], index = 1,
                                            R = 10000)$p.value
         }
       }
@@ -105,7 +105,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
       for (i in 1:dim(A)[2]) {
         for (j in 1:dim(A)[2]) {
           set.seed(24)
-          pvals[i, j] <- energy::dcor.test(A[, i], A[, j], index = 1, 
+          pvals[i, j] <- energy::dcor.test(A[, i], A[, j], index = 1,
                                            R = 10000)$p.value
         }
       }
@@ -115,7 +115,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
       ltri <- lower.tri(pmat)
       utri <- upper.tri(pmat)
       adj.method <- methodlist[[2]]
-      pmat[ltri] <- p.adjust(pmat[ltri], method = adj.method)
+      pmat[ltri] <- stats::p.adjust(pmat[ltri], method = adj.method)
       pmat[utri] <- t(pmat)[utri]
       rownames(pmat) <- colnames(A)
       colnames(pmat) <- colnames(A)
@@ -125,7 +125,7 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
     if (method == "EBICglasso") {
       corm.ebicglasso <- methodlist[[2]]
       tun.ebicglasso <- methodlist[[3]]
-      correls <- cor(A, method = corm.ebicglasso)
+      correls <- stats::cor(A, method = corm.ebicglasso)
       cm <- qgraph::EBICglasso(correls, n = dim(A)[1], gamma = tun.ebicglasso)
       diag(cm) <- 0
     }
@@ -153,29 +153,29 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
 #' create.graph(A,list("Spearman"))
 #' @export
 #'
-create.graph<-function (A, methodlist, thresh = 0.05) 
+create.graph<-function (A, methodlist, thresh = 0.05)
   {
     cm <- create.adjacency.matrix(A, methodlist, thresh)
     if (all(cm == 0)) {
-      output <- list(cm, NA, NA, NA, NA, 0, 0, ncol(cm), NA, NA, 
+      output <- list(cm, NA, NA, NA, NA, 0, 0, ncol(cm), NA, NA,
                      NA, NA, 0, 0, ncol(cm))
-      names(output) <- c("adjacency matrix", "graph", 
-                         "graph communities", "graph clustering", 
-                         "graph vertex degrees", "graph number of edges", 
-                         "graph number of clusters", "graph number of isolated nodes", 
-                         "MST", "MST communities", "MST clustering", 
-                         "MST vertex degrees", "MST number of edges", 
+      names(output) <- c("adjacency matrix", "graph",
+                         "graph communities", "graph clustering",
+                         "graph vertex degrees", "graph number of edges",
+                         "graph number of clusters", "graph number of isolated nodes",
+                         "MST", "MST communities", "MST clustering",
+                         "MST vertex degrees", "MST number of edges",
                          "MST number of clusters", "MST number of isolated nodes")
       return(output)
     }
     else {
-      g <- igraph::graph.adjacency(cm, weighted = TRUE, mode = "undirected", 
+      g <- igraph::graph.adjacency(cm, weighted = TRUE, mode = "undirected",
                                    diag = FALSE)
       g <- igraph::simplify(g, remove.multiple = TRUE, remove.loops = TRUE)
       igraph::E(g)[which(igraph::E(g)$weight < 0)]$color <- "red"
       igraph::E(g)[which(igraph::E(g)$weight > 0)]$color <- "blue"
       igraph::V(g)$name <- igraph::V(g)$name
-      g.communities <- igraph::edge.betweenness.community(g, weights = NULL, 
+      g.communities <- igraph::edge.betweenness.community(g, weights = NULL,
                                                           directed = FALSE)
       g.clustering <- igraph::make_clusters(g, membership = g.communities$membership)
       igraph::V(g)$color <- g.communities$membership
@@ -184,7 +184,7 @@ create.graph<-function (A, methodlist, thresh = 0.05)
       clusnum.g <- length(unique(g.communities$membership))
       numisolnodes.g <- length(which(deg.g == 0))
       mst <- igraph::mst(g, algorithm = "prim")
-      mst.communities <- igraph::edge.betweenness.community(mst, weights = NULL, 
+      mst.communities <- igraph::edge.betweenness.community(mst, weights = NULL,
                                                             directed = FALSE)
       mst.clustering <- igraph::make_clusters(mst, membership = mst.communities$membership)
       igraph::V(mst)$color <- mst.communities$membership
@@ -192,16 +192,16 @@ create.graph<-function (A, methodlist, thresh = 0.05)
       edgenum.mst <- igraph::gsize(mst)
       clusnum.mst <- length(unique(mst.communities$membership))
       numisolnodes.mst <- length(which(deg.mst == 0))
-      output <- list(cm, g, g.communities, g.clustering, deg.g, 
-                     edgenum.g, clusnum.g, numisolnodes.g, mst, mst.communities, 
-                     mst.clustering, deg.mst, edgenum.mst, clusnum.mst, 
+      output <- list(cm, g, g.communities, g.clustering, deg.g,
+                     edgenum.g, clusnum.g, numisolnodes.g, mst, mst.communities,
+                     mst.clustering, deg.mst, edgenum.mst, clusnum.mst,
                      numisolnodes.mst)
-      names(output) <- c("adjacency matrix", "graph", 
-                         "graph communities", "graph clustering", 
-                         "graph vertex degrees", "graph number of edges", 
-                         "graph number of clusters", "Graph number of isolated nodes", 
-                         "MST", "MST communities", "MST clustering", 
-                         "MST vertex degrees", "MST number of edges", 
+      names(output) <- c("adjacency matrix", "graph",
+                         "graph communities", "graph clustering",
+                         "graph vertex degrees", "graph number of edges",
+                         "graph number of clusters", "Graph number of isolated nodes",
+                         "MST", "MST communities", "MST clustering",
+                         "MST vertex degrees", "MST number of edges",
                          "MST number of clusters", "MST number of isolated nodes")
       return(output)
     }
@@ -224,9 +224,9 @@ create.graph<-function (A, methodlist, thresh = 0.05)
 #' @export
 #'
 frobenius.metric<-function(A,B){
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-sqrt(sum(abs((A-B)^2)))
   return(output)
@@ -243,9 +243,9 @@ frobenius.metric<-function(A,B){
 #' @export
 #'
 maximum.metric<-function(A,B){
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-max(abs(A-B))
   return(output)
@@ -263,9 +263,9 @@ maximum.metric<-function(A,B){
 #' @export
 #'
 spec.dist<-function(A,B){
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-sqrt(sum(((eigen(A)$values)-(eigen(B)$values))^2))
   return(output)
@@ -283,13 +283,14 @@ spec.dist<-function(A,B){
 #' @export
 #'
 global.str<-function(A,B){
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-abs(sum(abs(A))-sum(abs(B)))
   return(output)
 }
+
 
 
 ##########################characteristics used by Asada et al. (2016)
@@ -307,15 +308,13 @@ global.str<-function(A,B){
 #'
 number.differences<-function(A,B){
 
-  stopifnot("A and B need to be adjacency matrices." = class(A[[1]])==c("matrix","array") && class(B[[1]])==c("matrix","array")
+  stopifnot(`A and B need to be adjacency matrices.` = class(A[[1]])==c("matrix","array") && class(B[[1]])==c("matrix","array")
                                                        && nrow(A[[1]])==ncol(A[[1]]) && nrow(B[[1]])==ncol(B[[1]]),
-            "The listelements 6, 7, 8, 13, 14 and 15 need to be numbers. (This is the case if A and B are results of the function create.graph.)" =
-                  (class(A[[6]])=="numeric" || class(A[[6]])=="integer") && (class(A[[7]])=="numeric" || class(A[[7]])=="integer") &&
-                  (class(A[[8]])=="numeric" || class(A[[8]])=="integer") && (class(B[[6]])=="numeric" || class(B[[6]])=="integer") &&
-                  (class(B[[7]])=="numeric" || class(B[[7]])=="integer") && (class(B[[8]])=="numeric" || class(B[[8]])=="integer") &&
-                  (class(A[[13]])=="numeric" || class(A[[13]])=="integer") && (class(A[[14]])=="numeric" || class(A[[14]])=="integer") &&
-                  (class(A[[15]])=="numeric" || class(A[[15]])=="integer") && (class(B[[13]])=="numeric" || class(B[[13]])=="integer") &&
-                  (class(B[[14]])=="numeric" || class(B[[14]])=="integer") && (class(B[[15]])=="numeric" || class(B[[15]])=="integer"))
+            `The listelements 6, 7, 8, 13, 14 and 15 need to be numbers. (This is the case if A and B are results of the function create.graph.)` =
+                  all(lapply(A, class)[6:8] %in% c("numeric", "integer")) &&
+                  all(lapply(B, class)[6:8] %in% c("numeric", "integer")) &&
+                  all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &&
+                  all(lapply(B, class)[13:15] %in% c("numeric", "integer")))
 
   if(all(A[[1]]==0) | all(B[[1]]==0)){
     output<-rep(NA,6)
@@ -354,33 +353,33 @@ number.differences<-function(A,B){
 #'
 degree.inv<-function(X,Y){
 
-  stopifnot("X and Y need to be matrices" = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
-            "X and Y need to have the same dimensions" = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
-            "To compare the graphs of X and Y correctly they need the same columntitles" = colnames(X)==colnames(Y))
+  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+            `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
 
   if(all(X==0)){
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    A<-igraph::simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(A)$weight <- abs(E(A)$weight)
+    igraph::E(A)$weight <- abs(igraph::E(A)$weight)
   }
 
   if(all(Y==0)){
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    B<-igraph::simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(B)$weight <- abs(E(B)$weight)
+    igraph::E(B)$weight <- abs(igraph::E(B)$weight)
   }
 
-  degA<-degree(A)
-  degB<-degree(B)
+  degA<-igraph::degree(A)
+  degB<-igraph::degree(B)
 
   output<-abs(degA-degB)
   names(output)<-colnames(X)
@@ -402,33 +401,32 @@ degree.inv<-function(X,Y){
 #'
 betweenness.inv<-function(X,Y){
 
-  stopifnot("X and Y need to be matrices" = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
-            "X and Y need to have the same dimensions" = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
-            "To compare the graphs of X and Y correctly they need the same columntitles" = colnames(X)==colnames(Y))
-
+  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+            `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
   if(all(X==0)){
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    A<-igraph::simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(A)$weight <- abs(E(A)$weight)
+    igraph::E(A)$weight <- abs(igraph::E(A)$weight)
   }
 
   if(all(Y==0)){
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    B<-igraph::simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(B)$weight <- abs(E(B)$weight)
+    igraph::E(B)$weight <- abs(igraph::E(B)$weight)
   }
 
-  betA<-betweenness(A)
-  betB<-betweenness(B)
+  betA<-igraph::betweenness(A)
+  betB<-igraph::betweenness(B)
 
   output<-abs(betA-betB)
   names(output)<-colnames(X)
@@ -450,32 +448,33 @@ betweenness.inv<-function(X,Y){
 #'
 closeness.inv<-function(X,Y){
 
-  stopifnot("X and Y need to be matrices" = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
-            "X and Y need to have the same dimensions" = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
-            "To compare the graphs of X and Y correctly they need the same columntitles" = colnames(X)==colnames(Y))
+  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+            `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
+
 
   if(all(X==0)){
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    A<-igraph::simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(A)$weight <- abs(E(A)$weight)
+    igraph::E(A)$weight <- abs(igraph::E(A)$weight)
   }
 
   if(all(Y==0)){
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    B<-igraph::simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(B)$weight <- abs(E(B)$weight)
+    igraph::E(B)$weight <- abs(igraph::E(B)$weight)
   }
 
-  cloA<-closeness(A)
-  cloB<-closeness(B)
+  cloA<-igraph::closeness(A)
+  cloB<-igraph::closeness(B)
 
   output<-abs(cloA-cloB)
   names(output)<-colnames(X)
@@ -497,32 +496,32 @@ closeness.inv<-function(X,Y){
 #'
 eigen.inv<-function(X,Y){
 
-  stopifnot("X and Y need to be matrices" = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
-            "X and Y need to have the same dimensions" = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
-            "To compare the graphs of X and Y correctly they need the same columntitles" = colnames(X)==colnames(Y))
+  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+            `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
   if(all(X==0)){
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    A<-graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
+    A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    A<-simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
+    A<-igraph::simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(A)$weight <- abs(E(A)$weight)
+    igraph::E(A)$weight <- abs(igraph::E(A)$weight)
   }
 
   if(all(Y==0)){
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
-    B<-graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
+    B<-igraph::graph.adjacency(Y,weighted=TRUE, mode="undirected", diag=FALSE)
     # Simplfy the adjacency object
-    B<-simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
+    B<-igraph::simplify(B, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
-    E(B)$weight <- abs(E(B)$weight)
+    igraph::E(B)$weight <- abs(igraph::E(B)$weight)
   }
 
-  ecA<-eigen_centrality(A)$vector
-  ecB<-eigen_centrality(B)$vector
+  ecA<-igraph::eigen_centrality(A)$vector
+  ecB<-igraph::eigen_centrality(B)$vector
 
   output<-abs(ecA-ecB)
   names(output)<-colnames(X)
@@ -547,9 +546,9 @@ eigen.inv<-function(X,Y){
 #'
 edge.inv.direc<-function(A,B){
 
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be matrices or tibbles` = class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &&
+                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame"),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-abs(A-B)
   rownames(output)<-rownames(A)
@@ -573,9 +572,9 @@ edge.inv.direc<-function(A,B){
 #'
 edge.inv<-function(A,B){
 
-  stopifnot("A and B need to be matrices or tibbles" = (class(A)==c("matrix","array")||class(A)==c("tbl_df","tbl","data.frame")) &&
-                                                       (class(B)==c("matrix","array")||class(B)==c("tbl_df","tbl","data.frame")),
-            "A and B need to have the same dimensions" = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be matrices or tibbles` = class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &&
+                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame"),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
 
   output<-abs(abs(A)-abs(B))
   rownames(output)<-rownames(A)
@@ -601,26 +600,26 @@ edge.inv<-function(A,B){
 #' perm.test.nw(A = x1, B = x2, permnum = 10, methodlist = list("DistCorr"), thresh = 0.05, score.funct = frobenius.metric)
 #' @export
 #'
-perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, paired = FALSE) 
+perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, paired = FALSE)
   {
-    stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = (class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") && class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") && ncol(A) == ncol(B)), `permnum needs to be a natural number.` = permnum > 
-                0 && permnum%%1 == 0, `thresh needs to be a non-negative number.` = thresh >= 
-                0, `score.funct needs to be a function.` = class(score.funct) == 
-                "function", `paired needs to be a boolean.` = paired == 
+    stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = (class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") && class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") && ncol(A) == ncol(B)), `permnum needs to be a natural number.` = permnum >
+                0 && permnum%%1 == 0, `thresh needs to be a non-negative number.` = thresh >=
+                0, `score.funct needs to be a function.` = class(score.funct) ==
+                "function", `paired needs to be a boolean.` = paired ==
                 TRUE || paired == FALSE)
     if (identical(score.funct, number.differences)) {
       graph.A <- create.graph(A, methodlist = methodlist, thresh = thresh)
       graph.B <- create.graph(B, methodlist = methodlist, thresh = thresh)
       value.orig <- number.differences(graph.A, graph.B)
-      names(value.orig) <- c("Graph Diff num of edges", 
-                             "Graph Diff num of clusters", "Graph Diff num of isolated nodes", 
-                             "MST Diff num of edges", "MST Diff num of clusters", 
+      names(value.orig) <- c("Graph Diff num of edges",
+                             "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                             "MST Diff num of edges", "MST Diff num of clusters",
                              "MST Diff num of isolated nodes")
     }
     else {
-      adj.A <- create.adjacency.matrix(A, methodlist = methodlist, 
+      adj.A <- create.adjacency.matrix(A, methodlist = methodlist,
                                        thresh = thresh)
-      adj.B <- create.adjacency.matrix(B, methodlist = methodlist, 
+      adj.B <- create.adjacency.matrix(B, methodlist = methodlist,
                                        thresh = thresh)
       value.orig <- score.funct(adj.A, adj.B)
     }
@@ -641,43 +640,43 @@ perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, pai
       create.permut.paired <- function(seedex) {
         set.seed(seedex)
         s <- sample(c("A", "B"), nrow(A), replace = TRUE)
-        A.new <- rbind(A[s == "A", ], B[s == "B", 
+        A.new <- rbind(A[s == "A", ], B[s == "B",
                                         ])
-        B.new <- rbind(B[s == "A", ], A[s == "B", 
+        B.new <- rbind(B[s == "A", ], A[s == "B",
                                         ])
         output <- list(A.new, B.new)
         return(output)
       }
       shuffle <- lapply(1:permnum, create.permut.paired)
     }
-    if (any(identical(score.funct, frobenius.metric), identical(score.funct, 
-                                                                maximum.metric), identical(score.funct, spec.dist), identical(score.funct, 
+    if (any(identical(score.funct, frobenius.metric), identical(score.funct,
+                                                                maximum.metric), identical(score.funct, spec.dist), identical(score.funct,
                                                                                                                               global.str))) {
       value.perm <- rep(NA, permnum)
       for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]], 
+        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
                                               methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]], 
+        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
                                               methodlist = methodlist, thresh = thresh)
         value.perm[n] <- score.funct(adj.A.perm, adj.B.perm)
       }
       num.extr <- sum(value.perm >= value.orig)
       pvalue.ecdf <- num.extr/permnum
       pvalue.ecdf.pseudo <- (1 + num.extr)/(permnum + 1)
-      output <- list(adj.A, adj.B, value.orig, value.perm, 
+      output <- list(adj.A, adj.B, value.orig, value.perm,
                      pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B", 
-                         "test.statistic", "test.statistics.perm", 
+      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+                         "test.statistic", "test.statistics.perm",
                          "pvalue", "pvalue.pseudocount")
     }
     if (identical(score.funct, number.differences)) {
       value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
       for (n in 1:permnum) {
-        graph.A.perm <- create.graph(shuffle[[n]][[1]], methodlist = methodlist, 
+        graph.A.perm <- create.graph(shuffle[[n]][[1]], methodlist = methodlist,
                                      thresh = thresh)
-        graph.B.perm <- create.graph(shuffle[[n]][[2]], methodlist = methodlist, 
+        graph.B.perm <- create.graph(shuffle[[n]][[2]], methodlist = methodlist,
                                      thresh = thresh)
-        value.perm[n, ] <- number.differences(graph.A.perm, 
+        value.perm[n, ] <- number.differences(graph.A.perm,
                                               graph.B.perm)
       }
       pvalue.ecdf <- rep(NA, length(value.orig))
@@ -691,41 +690,41 @@ perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, pai
           if (all(is.na(value.perm[, j]) == FALSE)) {
             num.extr <- sum(value.perm[, j] >= value.orig[j])
             pvalue.ecdf[j] <- num.extr/permnum
-            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum + 
+            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
                                                        1)
           }
           else {
             permnum <- length(na.omit(value.perm[, j]))
-            num.extr <- sum(na.omit(value.perm[, j]) >= 
+            num.extr <- sum(na.omit(value.perm[, j]) >=
                               value.orig[j])
             pvalue.ecdf[j] <- num.extr/permnum
-            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum + 
+            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
                                                        1)
           }
         }
       }
-      names(pvalue.ecdf) <- c("Graph Diff num of edges", 
-                              "Graph Diff num of clusters", "Graph Diff num of isolated nodes", 
-                              "MST Diff num of edges", "MST Diff num of clusters", 
+      names(pvalue.ecdf) <- c("Graph Diff num of edges",
+                              "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                              "MST Diff num of edges", "MST Diff num of clusters",
                               "MST Diff num of isolated nodes")
-      names(pvalue.ecdf.pseudo) <- c("Graph Diff num of edges", 
-                                     "Graph Diff num of clusters", "Graph Diff num of isolated nodes", 
-                                     "MST Diff num of edges", "MST Diff num of clusters", 
+      names(pvalue.ecdf.pseudo) <- c("Graph Diff num of edges",
+                                     "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                                     "MST Diff num of edges", "MST Diff num of clusters",
                                      "MST Diff num of isolated nodes")
-      output <- list(graph.A, graph.B, value.orig, value.perm, 
+      output <- list(graph.A, graph.B, value.orig, value.perm,
                      pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("graph.A", "graph.B", 
-                         "test.statistic", "test.statistics.perm", 
+      names(output) <- c("graph.A", "graph.B",
+                         "test.statistic", "test.statistics.perm",
                          "pvalue", "pvalue.pseudocount")
     }
-    if (any(identical(score.funct, degree.inv), identical(score.funct, 
-                                                          betweenness.inv), identical(score.funct, closeness.inv), 
+    if (any(identical(score.funct, degree.inv), identical(score.funct,
+                                                          betweenness.inv), identical(score.funct, closeness.inv),
             identical(score.funct, eigen.inv))) {
       value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
       for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]], 
+        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
                                               methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]], 
+        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
                                               methodlist = methodlist, thresh = thresh)
         value.perm[n, ] <- score.funct(adj.A.perm, adj.B.perm)
       }
@@ -736,49 +735,49 @@ perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, pai
       for (i in 1:length(value.orig)) {
         num.extr <- sum(value.perm[, i] >= value.orig[i])
         pvalue.ecdf[i] <- num.extr/permnum
-        pvalue.ecdf.pseudo[i] <- (1 + num.extr)/(permnum + 
+        pvalue.ecdf.pseudo[i] <- (1 + num.extr)/(permnum +
                                                    1)
       }
-      output <- list(adj.A, adj.B, value.orig, value.perm, 
+      output <- list(adj.A, adj.B, value.orig, value.perm,
                      pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B", 
-                         "test.statistic", "test.statistics.perm", 
+      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+                         "test.statistic", "test.statistics.perm",
                          "pvalue", "pvalue.pseudocount")
     }
-    if (any(identical(score.funct, edge.inv), identical(score.funct, 
+    if (any(identical(score.funct, edge.inv), identical(score.funct,
                                                         edge.inv.direc))) {
       value.perm <- array(data = NA, dim = c(permnum, dim(adj.A)))
       for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]], 
+        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
                                               methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]], 
+        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
                                               methodlist = methodlist, thresh = thresh)
         value.perm[n, , ] <- score.funct(adj.A.perm, adj.B.perm)
       }
-      pvalue.ecdf <- array(data = NA, dim = dim(value.orig), 
+      pvalue.ecdf <- array(data = NA, dim = dim(value.orig),
                            dimnames = list(rownames(value.orig), colnames(value.orig)))
-      pvalue.ecdf.pseudo <- array(data = NA, dim = dim(value.orig), 
+      pvalue.ecdf.pseudo <- array(data = NA, dim = dim(value.orig),
                                   dimnames = list(rownames(value.orig), colnames(value.orig)))
       for (i in 1:dim(value.orig)[1]) {
         for (j in 1:dim(value.orig)[2]) {
-          num.extr <- sum(value.perm[, i, j] >= value.orig[i, 
+          num.extr <- sum(value.perm[, i, j] >= value.orig[i,
                                                            j])
           pvalue.ecdf[i, j] <- num.extr/permnum
-          pvalue.ecdf.pseudo[i, j] <- (1 + num.extr)/(permnum + 
+          pvalue.ecdf.pseudo[i, j] <- (1 + num.extr)/(permnum +
                                                         1)
         }
       }
-      p.ecdf <- data.frame(var1 = rownames(pvalue.ecdf)[row(pvalue.ecdf)[upper.tri(pvalue.ecdf)]], 
-                           var2 = colnames(pvalue.ecdf)[col(pvalue.ecdf)[upper.tri(pvalue.ecdf)]], 
+      p.ecdf <- data.frame(var1 = rownames(pvalue.ecdf)[row(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
+                           var2 = colnames(pvalue.ecdf)[col(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
                            pvalue = pvalue.ecdf[upper.tri(pvalue.ecdf)])
-      p.ecdf.pseudo <- data.frame(var1 = rownames(pvalue.ecdf.pseudo)[row(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]], 
-                                  var2 = colnames(pvalue.ecdf.pseudo)[col(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]], 
+      p.ecdf.pseudo <- data.frame(var1 = rownames(pvalue.ecdf.pseudo)[row(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
+                                  var2 = colnames(pvalue.ecdf.pseudo)[col(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
                                   pvalue = pvalue.ecdf.pseudo[upper.tri(pvalue.ecdf.pseudo)])
-      output <- list(adj.A, adj.B, value.orig, value.perm, 
+      output <- list(adj.A, adj.B, value.orig, value.perm,
                      pvalue.ecdf, pvalue.ecdf.pseudo, p.ecdf, p.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B", 
-                         "test.statistic", "test.statistics.perm", 
-                         "pvalue", "pvalue.pseudocount", "pvalue.summ", 
+      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+                         "test.statistic", "test.statistics.perm",
+                         "pvalue", "pvalue.pseudocount", "pvalue.summ",
                          "pvalue.pseudocount.summ")
     }
     return(output)

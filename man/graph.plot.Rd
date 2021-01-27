@@ -9,8 +9,10 @@ graph.plot(
   B,
   methodlist,
   thresh = 0.05,
-  admission = TRUE,
-  event = TRUE,
+  networkA = TRUE,
+  networkB = TRUE,
+  networkAtitle = "Network A",
+  networkBtitle = "Network B",
   cluster = TRUE,
   negcol = "red",
   poscol = "blue",
@@ -30,9 +32,13 @@ graph.plot(
 
 \item{thresh}{the threshold under which the values of the correlations are relevant.}
 
-\item{admission}{Boolean value that specifies if the Survivors Admission shall be plotted.}
+\item{networkA}{Boolean value that specifies if the Survivors Admission shall be plotted.}
 
-\item{event}{Boolean value that specifies if the Survivors Event shall be plotted.}
+\item{networkB}{Boolean value that specifies if the Survivors Event shall be plotted.}
+
+\item{networkAtitle}{The title of the graph of the network of A.}
+
+\item{networkBtitle}{The title of the graph of the network of B.}
 
 \item{cluster}{is the boolean value that states if the graphs shall be divided in their clusters or not.}
 
