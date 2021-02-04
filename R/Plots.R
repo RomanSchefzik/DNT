@@ -60,7 +60,9 @@ graph.plot <- function(A, B, methodlist, thresh = 0.05, networkA = TRUE, network
 
   graphics::par(mfrow=c(1,2),oma=c(0,0,2,0))
 
-
+  #if(require(igraph) == FALSE){
+  #  library(igraph)
+  #}
   if(cluster == TRUE){
     if(networkA == TRUE && is.null(g1[[1]]) == FALSE){
       plot(
@@ -174,3 +176,4 @@ create.Igraphclustering<-function (A, methodlist, thresh = 0.05)
   }
   list(g.clustering.x1, g.x1)
 }
+

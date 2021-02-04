@@ -7,7 +7,6 @@
 #' @import igraph
 #' @import shiny
 #' @importFrom Hmisc rcorr
-#' @importFrom energy dcor
 #' @importFrom energy dcor.test
 #' @importFrom ppcor pcor
 #' @importFrom qgraph EBICglasso
@@ -19,5 +18,13 @@
 #' @importFrom graphics mtext
 #' @importFrom graphics par
 #' @importFrom utils read.csv2
+#' @importFrom utils read.table
+#' @importFrom dplyr select
+#' @importFrom readxl read_excel
+#' @importFrom tools file_ext
+#' @importFrom stringr str_detect
+#' @importFrom shinybusy add_busy_spinner
+#' @importFrom shinybusy show_spinner
+#' @importFrom shinybusy hide_spinner
 ## usethis namespace: end
 NULL
