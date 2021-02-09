@@ -18,7 +18,7 @@ graph.plot(
   poscol = "blue",
   multiplier = 4,
   curved = TRUE,
-  layout = layout.fruchterman.reingold,
+  layout = igraph::layout.fruchterman.reingold,
   vSize = 16,
   tSize = 0.8
 )

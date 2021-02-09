@@ -6,6 +6,7 @@
 ## usethis namespace: start
 #' @import igraph
 #' @import shiny
+#' @importFrom igraph layout.fruchterman.reingold
 #' @importFrom Hmisc rcorr
 #' @importFrom energy dcor.test
 #' @importFrom ppcor pcor

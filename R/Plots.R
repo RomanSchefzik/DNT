@@ -24,7 +24,7 @@
 #' graph.plot(x1,x2, list("Spearman), caption = "Spearman", directory)
 #' @export
 #'
-graph.plot <- function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB = TRUE, networkAtitle = "Network A", networkBtitle = "Network B", cluster = TRUE, negcol = "red", poscol= "blue",multiplier = 4, curved = TRUE, layout = layout.fruchterman.reingold, vSize = 16, tSize = 0.8){
+graph.plot <- function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB = TRUE, networkAtitle = "Network A", networkBtitle = "Network B", cluster = TRUE, negcol = "red", poscol= "blue",multiplier = 4, curved = TRUE, layout = igraph::layout.fruchterman.reingold, vSize = 16, tSize = 0.8){
 
   stopifnot(`cluster needs to be boolean` = cluster==TRUE || cluster==FALSE,
             `negcol and poscol need to be strings` = class(negcol)=="character" && class(poscol)=="character",
@@ -60,9 +60,6 @@ graph.plot <- function(A, B, methodlist, thresh = 0.05, networkA = TRUE, network
 
   graphics::par(mfrow=c(1,2),oma=c(0,0,2,0))
 
-  #if(require(igraph) == FALSE){
-  #  library(igraph)
-  #}
   if(cluster == TRUE){
     if(networkA == TRUE && is.null(g1[[1]]) == FALSE){
       plot(
@@ -173,6 +170,7 @@ create.Igraphclustering<-function (A, methodlist, thresh = 0.05)
                                                    weights = NULL, directed = FALSE)
     g.clustering.x1 <- igraph::make_clusters(g.x1, membership = g.communities.x1$membership)
     igraph::V(g.x1)$color <- g.communities.x1$membership
+    igraph::V(g.x1)$label.color <- "black"
   }
   list(g.clustering.x1, g.x1)
 }

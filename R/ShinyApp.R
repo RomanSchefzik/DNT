@@ -358,7 +358,6 @@ layout.func <- function(layout){
 #'
 import.table <- function(directory){
   ending <- tools::file_ext(directory)
-  #ending <- stringr::str_extract(directory, "\\.[:alpha:]+$")
   stopifnot("This data format is not supported" = ending %in% c("xls", "RData", "csv", "txt"))
   table <- 0
   if(ending == "RData"){
