@@ -7,6 +7,7 @@
 #' @import igraph
 #' @import shiny
 #' @importFrom igraph layout.fruchterman.reingold
+#' @importFrom igraph layout.auto
 #' @importFrom Hmisc rcorr
 #' @importFrom energy dcor.test
 #' @importFrom ppcor pcor
