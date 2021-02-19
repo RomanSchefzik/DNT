@@ -1,6 +1,6 @@
 # DNT
 
-Differential network testing
+Differential network tests
 
 ## Installation
 
@@ -22,6 +22,28 @@ The DNT package can then be loaded using
 
 ## Usage
 
-The package provides functions to test for differences between two statistical networks based on permutation tests. There are various options for network estimation and network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered.
+The DNT package provides an overall frame for testing for differences between two statistical networks based on permutation tests. There are various options for (i) network estimation (i.e. specifying the adjacency matrices) and (ii) network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered. DNT fuses scattered functions from packages such as igraph, Hmisc, energy and qgraph in an overarching frame for differential network testing. 
 
-The core function of the package is `perm.nw.test`, which allows to test for differences between two statistical networks, where several settings have to be specified. First, a network estimation method has to be chosen. Here, several options are provided:
+The DNT package essentially contains three main functions: `create.adjacency.matrix`, `perm.nw.test` and `graph.plot`.
+
+With the function `create.adjacency.matrix(A,methodlist,thresh)`, an adjacency matrix for an input data table `A` can be created, where the specific method for estimating the adjacency matrix can be specified in the `methodlist` argument. Currently, the following options are implemented: Spearman correlations, partial Spearman correlations, distance correlations and EBICglasso. See `?create.adjacency.matrix` for details.
+
+### Examples
+```
+create.adjacency.matrix(ExDataA,methodlist=list("Spearman"),thresh=0.05)
+```
+
+The core function of the DNT package is `perm.nw.test`, which allows to test for differences between two statistical networks, where several settings have to be specified. First, a network estimation method has to be chosen. Here, several options are provided: See `?perm.test.nw` for details.
+
+### Examples
+```
+perm.nw.test(ExDataA,ExDataB,permnum=10000,methodlist=list("Spearman"),thresh=0.05,score.func=global.str,paired=TRUE)
+```
+
+The function `graph.plot` provides visual comparison between two networks. See `?graph.plot` for details.
+By calling `create.app()` in the R console, an R Shiny app is loaded, which implements the function `graph.plot` in a user-friendly interface.
+
+### Examples
+```
+graph.plot(ExDataA,ExDataB,methodlist=list("Spearman"))
+```
