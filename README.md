@@ -58,14 +58,23 @@ See `?comp.plot` for details.
 #### Examples (using the supplied example data sets `ExDataA` and `ExDataB`)
 ```
 comp.plot(A=ExDataA,B=ExDataB,methodlist=list("Spearman"))
-comp.plot(A=ExDataA,B=ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),layout=igraph::layout.circle,curved=FALSE)
-comp.plot(A=ExDataA,B=ExDataB,methodlist=list("EBICglasso","spearman",0.1),layout=igraph::layout.fruchterman.reingold,curved=FALSE)
 ```
 
 ![ScreenShot](/ExampleFigures/ExPlotSpearman.png)
 
+```
+comp.plot(A=ExDataA,B=ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),layout=igraph::layout.circle,curved=FALSE)
+```
+
 <p align="center">
 <img src="/ExampleFigures/ExPlotPCSpearmanadj.png" width="600" height="400">
+</p>
+
+```
+comp.plot(A=ExDataA,B=ExDataB,methodlist=list("EBICglasso","spearman",0.1),layout=igraph::layout.fruchterman.reingold,curved=FALSE)
+```
+<p align="center">
+<img src="/ExampleFigures/ExPlotEBICglasso.png" width="800" height="500">
 </p>
 
 ### R Shiny app for visual comparison of two networks
