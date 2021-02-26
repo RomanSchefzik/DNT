@@ -62,6 +62,8 @@ comp.plot(A=ExDataA,B=ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),lay
 comp.plot(A=ExDataA,B=ExDataB,methodlist=list("EBICglasso","spearman",0.1),layout=igraph::layout.fruchterman.reingold,curved=FALSE)
 ```
 
+![ScreenShot](/ExampleFigures/ExPlotSpearman.png)
+
 ### R Shiny app for visual comparison of two networks
 
 By calling `create.app()` in the R console, an R Shiny app in which the function `graph.plot` for visual comparison of two networks is implemented in a user-friendly interface will be opened.
