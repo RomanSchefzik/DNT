@@ -2,10 +2,23 @@
 % Please edit documentation in R/ShinyApp.R
 \name{server}
 \alias{server}
-\title{Server}
+\title{Server function for Shiny app}
 \usage{
 server(input, output, session)
 }
+\arguments{
+\item{input}{list-like object containing all the input data sent from the browser, named according to the input ID}
+
+\item{output}{list-like object, named according to the output ID}
+
+\item{session}{environment that can be employed to access information and functionality with respect to the session}
+}
+\value{
+Server function for Shiny app
+}
 \description{
-Server for the ShinyApp.
+Server function for Shiny app
+}
+\details{
+As one never calls the server function by oneself, one will never create the three argument objects by oneself. Instead, they are created by Shiny when the session starts, connecting back to a specific session.
 }

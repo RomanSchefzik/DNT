@@ -2,24 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{edge.inv}
 \alias{edge.inv}
-\title{Edge without direction}
+\title{Calculates the differences in absolute edge weight for each network edge}
 \usage{
 edge.inv(A, B)
 }
 \arguments{
-\item{A}{a matrix.}
-
-\item{B}{a matrix.}
+\item{A, B}{adjacency matrices of the same dimension}
 }
 \value{
-Return
+a symmetric \eqn{N \times N} matrix, with \eqn{N} denoting the number of nodes, containing the differences in absolute edge weight between two respective nodes
 }
 \description{
-A
+This function calculates the differences in absolute edge weight for each edge between two networks (adjacency matrices of the same dimension).
 }
 \details{
-One of the methods to compare two networks on their edge-specific differneces.
+This function calculates the differences in absolute edge weight for each edge between two networks (adjacency matrices of the same dimension). In particular, by considering absolute edge weights, it does not take account of directions (signs) of the edge weights (associations) when deriving the differences. Differences in absolute edge weight are one of the edge-specific network difference characteristics to compare two networks.
 }
 \examples{
+A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 edge.inv(A,B)
 }

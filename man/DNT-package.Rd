@@ -4,8 +4,8 @@
 \name{DNT-package}
 \alias{DNT}
 \alias{DNT-package}
-\title{DNT: Differential network testing}
+\title{DNT: Differential network tests}
 \description{
-The package provides functions to test for differences between two statistical networks based on permutation tests. There are various options for network estimation and network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered.
+The DNT package provides a frame for testing for differences between two statistical networks based on permutation tests. Various options for network estimation (i.e. specifying the adjacency matrix) and network comparison (using several overall, node-specifc or edge-specific network difference chacteristics) are implemented. Moreover, tools for graphical illustrations and comparisons are offered.
 }
 \keyword{internal}

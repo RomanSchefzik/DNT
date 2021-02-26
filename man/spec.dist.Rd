@@ -2,22 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{spec.dist}
 \alias{spec.dist}
-\title{Spectral distance}
+\title{Calculates the spectral distance}
 \usage{
 spec.dist(A, B)
 }
 \arguments{
-\item{A, B}{are matrices.}
+\item{A, B}{adjacency matrices of the same dimension}
 }
 \value{
-The spectral distance of the two adjacency matrices \code{A} and \code{B}.
+the spectral distance between the two adjacency matrices \code{A} and \code{B}
 }
 \description{
-The method calculates the Spectral distance.
+This function calculates the spectral distance between two adjacency matrices of the same dimension.
 }
 \details{
-One of the methods to compare two networks on their overall network characteristics.
+This function calculates the spectral distance between two adjacency matrices of the same dimension. The spectral distance is an overall characteristic that can be employed to compare two networks.
 }
 \examples{
-spec.dist(matrix(3,2), matrix(2,2))
+A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+spec.dist(A,B)
 }

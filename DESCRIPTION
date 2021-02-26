@@ -1,10 +1,10 @@
 Package: DNT
 Type: Package
-Title: Differential network testing
+Title: Differential network tests
 Version: 0.1.0
-Author: Leonie Boland and Roman Schefzik
+Author: Roman Schefzik and Leonie Boland
 Maintainer: Roman Schefzik <roman.schefzik@medma.uni-heidelberg.de>
-Description: The package provides functions to test for differences between two statistical networks based on permutation tests. There are various options for network estimation and network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered. 
+Description: The DNT package provides a frame for testing for differences between two statistical networks based on permutation tests. Various options for network estimation (i.e. specifying the adjacency matrix) and network comparison (using several overall, node-specifc or edge-specific network difference chacteristics) are implemented. Moreover, tools for graphical illustrations and comparisons are offered. 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -17,8 +17,10 @@ Imports:
     energy,
     qgraph,
     stats,
-    dplyr, 
+    dplyr,
     readxl,
     stringr,
     tools,
+    utils,
     shinybusy
+

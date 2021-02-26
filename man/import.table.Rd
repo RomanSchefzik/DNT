@@ -2,19 +2,19 @@
 % Please edit documentation in R/ShinyApp.R
 \name{import.table}
 \alias{import.table}
-\title{Import table}
+\title{Imports an external table into R}
 \usage{
 import.table(directory)
 }
 \arguments{
-\item{directory}{The directory to the file that should be loaded into R as a tibble.}
+\item{directory}{the directory to the external table that should be imported into R}
 }
 \value{
-The data loaded out of the data file.
+the imported data table
 }
 \description{
-The function loads a table out of an extern file into R.
+This function imports an external table into R.
 }
 \details{
-The function will only keep the columns with integers or doubles and the function can work with RData, text, excel, csv files.
+This function imports an external table into R. It causes that only columns with integers or doubles are kept and works with .RData, .txt, .xls and .csv files as input.
 }

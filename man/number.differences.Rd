@@ -2,23 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{number.differences}
 \alias{number.differences}
-\title{Differences between two graphs}
+\title{Calculates the differences with respect to the number of edges, clusters and isolated nodes between two networks}
 \usage{
 number.differences(A, B)
 }
 \arguments{
-\item{A, B}{are results from the function create.graph.}
+\item{A, B}{output results when applying the function \code{create.graph} to two data tables from which the two networks are constructed}
 }
 \value{
-A list of the differences in the number of edges, clusters and isolated nodes of the graph and the corresponding
-minimum spanning tree.
+a vector of length 6 containing the graph difference in the number of edges, the graph difference in the number of clusters, the graph difference in the number of isolated nodes, the MST difference in the number of edges, the MST difference in the number of clusters and the MST difference in the number of isolated nodes
 }
 \description{
-The method calculates differences between two graphs.
+This function calculates the differences with respect to the number of edges, clusters (obtained by the Girvan-Newman algorithm) and isolated nodes (i.e. nodes without any edge) between two networks, for both \code{igraph} graphs and the corresponding minimum spanning trees (MSTs).
 }
 \details{
-One of the methods to compare two networks on their overall network characteristics.
+This function calculates the differences with respect to the number of edges, clusters (obtained by the Girvan-Newman algorithm) and isolated nodes (i.e. nodes without any edge) between two networks, for both \command{igraph} graphs and the corresponding minimum spanning trees (MSTs). It builds on the \command{create.graph} function, which creates \command{igraph} graph and corresponding MST results from adjacency matrices that are produced out of input tables, using an estimation method specified by the user; see the documentation of \command{create.graph} for further information. Differences in numbers of edges, clusters and isolated nodes are overall characteristics that can be employed to compare two networks.
 }
 \examples{
-number.differences(create.graph(A, list("Spearman")),create.graph(B, list("Spearman")))
+A<-create.graph(ExDataA,methodlist=list("Spearman"))
+B<-create.graph(ExDataB,methodlist=list("Spearman"))
+number.differences(A,B)
 }

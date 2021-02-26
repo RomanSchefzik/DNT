@@ -2,22 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{frobenius.metric}
 \alias{frobenius.metric}
-\title{Frobenius metric}
+\title{Calculates the Frobenius metric}
 \usage{
 frobenius.metric(A, B)
 }
 \arguments{
-\item{A, B}{are matrices.}
+\item{A, B}{adjacency matrices of the same dimension}
 }
 \value{
-The frobenius metric of the two adjacency matrices \code{A} and \code{B}.
+the Frobenius metric between the two adjacency matrices \code{A} and \code{B}
 }
 \description{
-The method calculates the Frobenius metric.
+This function calculates the Frobenius metric between two adjacency matrices of the same dimension.
 }
 \details{
-One of the methods to compare two networks on their overall network characteristics.
+This function calculates the Frobenius metric between two adjacency matrices of the same dimension. The Frobenius metric is an overall characteristic that can be employed to compare two networks.
 }
 \examples{
-frobenius.metric(matrix(3,2), matrix(2,2))
+A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+frobenius.metric(A,B)
 }

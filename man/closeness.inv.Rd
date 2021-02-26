@@ -2,19 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{closeness.inv}
 \alias{closeness.inv}
-\title{Closeness}
+\title{Calculates differences in closeness for each network node}
 \usage{
 closeness.inv(X, Y)
 }
+\arguments{
+\item{X, Y}{adjacency matrices of the same dimension}
+}
 \value{
-Return
+a vector of length \eqn{N} (number of nodes), containing the differences in closeness between the two networks for each node
 }
 \description{
-A
+This function calculates the differences in closeness for each node between two networks (adjacency matrices of the same dimension).
 }
 \details{
-One of the methods to compare two networks on their node-specific differences.
+This function calculates the differences in closeness for each node between two networks (adjacency matrices of the same dimension). Differences in closeness are one of the node-specific network difference characteristics to compare two networks.
 }
 \examples{
+X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 closeness.inv(X,Y)
 }

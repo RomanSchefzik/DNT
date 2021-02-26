@@ -2,10 +2,10 @@
 % Please edit documentation in R/ShinyApp.R
 \name{create.app}
 \alias{create.app}
-\title{Create App}
+\title{Creates Shiny app}
 \usage{
 create.app()
 }
 \description{
-Creates the Shiny App of the Differential Network Tests
+Creates the Shiny app corresponding to the DNT package
 }

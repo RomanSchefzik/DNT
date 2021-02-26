@@ -2,22 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{maximum.metric}
 \alias{maximum.metric}
-\title{Maximum metric}
+\title{Calculates the maximum metric}
 \usage{
 maximum.metric(A, B)
 }
 \arguments{
-\item{A, B}{matices.}
+\item{A, B}{adjacency matrices of the same dimension}
 }
 \value{
-The Maximum metric of the two adjacency matrices \code{A} and \code{B}.
+the maximum metric between the two adjacency matrices \code{A} and \code{B}
 }
 \description{
-The method calculates the Maximum metric.
+This function calculates the maximum metric between two adjacency matrices of the same dimension.
 }
 \details{
-One of the methods to compare two networks on their overall network characteristics.
+This function calculates the maximum metric between two adjacency matrices of the same dimension. The maximum metric is an overall characteristic that can be employed to compare two networks.
 }
 \examples{
-maximum.metric(matrix(3,2), matrix(2,2))
+A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+maximum.metric(A,B)
 }

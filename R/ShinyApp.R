@@ -2,7 +2,7 @@ ui <- basicPage(
   title = "DNT",
 
  navbarPage(
-    "Differential network test",
+    "Differential network tests",
 
     #1. Panel: Comparison -----------------------
     tabPanel(
@@ -10,24 +10,24 @@ ui <- basicPage(
       shinybusy::add_busy_spinner(spin = "fading-circle"),
       fluidRow(
         column(3,
-               fileInput("fileA", "Choose RData, TXT, CSV or XLS File for Network A", accept = c(".RData", ".txt", ".csv", ".xls")),
-               fileInput("fileB", "Choose RData, TXT, CSV or XLS File for Network B", accept = c(".RData", ".txt", ".csv", ".xls"))
+               fileInput("fileA", "select .RData, .txt, .csv or .xls file for network A", accept = c(".RData", ".txt", ".csv", ".xls")),
+               fileInput("fileB", "select .RData, .txt, .csv or .xls File for network B", accept = c(".RData", ".txt", ".csv", ".xls"))
         ),
         column(3,
-               textInput("negcol", "Color of negative edges", value = "blue"),
-               textInput("poscol", "Color of positive edges", value = "red"),
-               numericInput("multiplier", "Multiplier with edge weight", value=4)
+               textInput("negcol", "color of edges with negative association", value = "blue"),
+               textInput("poscol", "color of edges with positive association", value = "red"),
+               numericInput("multiplier", "multiplier for edge width", value=4)
         ),
         column(3,
-               selectInput("layout", "Layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
-               selectInput("curve", "Edge curved", choices=list(TRUE, FALSE)),
-               sliderInput("vSize", "Vertice Size", min=8, max=50, value=16),
-               sliderInput("tSize", "Text Size", min=0.4, max=2.5, value=0.8)
+               selectInput("layout", "layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
+               selectInput("curve", "curved edges", choices=list(TRUE, FALSE)),
+               sliderInput("vSize", "node size", min=8, max=50, value=16),
+               sliderInput("tSize", "text size", min=0.4, max=2.5, value=0.8)
         ),
         column(3,
-               selectInput("method", "Method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
-               selectInput("adj.method", "Adjust method", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
-               numericInput("tun.ebic", "Number for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
+               selectInput("method", "network estimation method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
+               selectInput("adj.method", "p-value adjustment method in network estimation", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
+               numericInput("tun.ebic", "tuning parameter for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
         )
       ),
       mainPanel(width = 12,plotOutput("plot1"))
@@ -38,24 +38,24 @@ ui <- basicPage(
       shinybusy::add_busy_spinner(spin = "fading-circle"),
       fluidRow(
         column(3,
-               p("Takes file for Network A from 'Comparison'-Tab if no file is selected here."),
-               fileInput("fileA2", "Choose RData, TXT, CSV or XLS File", accept = c(".RData", ".txt", ".csv", ".xls"))
+               p("Takes file for network A from 'Comparison' tab if no file is selected here."),
+               fileInput("fileA2", "select .RData, .txt, .csv or .xls file", accept = c(".RData", ".txt", ".csv", ".xls"))
         ),
         column(3,
-               textInput("negcol2", "Color of negative edges", value = "blue"),
-               textInput("poscol2", "Color of positive edges", value = "red"),
-               numericInput("multiplier2", "Multiplier with edge weight", value=4)
+               textInput("negcol2", "color of edges with negative association", value = "blue"),
+               textInput("poscol2", "color of edges with positive association", value = "red"),
+               numericInput("multiplier2", "multiplier for edge width", value=4)
         ),
         column(3,
-               selectInput("layout2", "Layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
-               selectInput("curve2", "Edge curved", choices=list(TRUE, FALSE)),
-               sliderInput("vSize2", "Vertice Size", min=8, max=50, value=16),
-               sliderInput("tSize2", "Text Size", min=0.4, max=2.5, value=0.8)
+               selectInput("layout2", "layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
+               selectInput("curve2", "curved edges", choices=list(TRUE, FALSE)),
+               sliderInput("vSize2", "node size", min=8, max=50, value=16),
+               sliderInput("tSize2", "text size", min=0.4, max=2.5, value=0.8)
         ),
         column(3,
-               selectInput("method2", "Method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
-               selectInput("adj.method2", "Adjust method", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
-               numericInput("tun.ebic2", "Number for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
+               selectInput("method2", "network estimation method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
+               selectInput("adj.method2", "p-value adjustment method in network estimation", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
+               numericInput("tun.ebic2", "tuning parameter for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
         )
       ),
       mainPanel(width = 12, plotOutput("plot2"))
@@ -66,24 +66,24 @@ ui <- basicPage(
       shinybusy::add_busy_spinner(spin = "fading-circle"),
       fluidRow(
         column(3,
-               p("Takes file for Network B from 'Comparison'-Tab if no file is selected here."),
-               fileInput("fileB3", "Choose RData, TXT, CSV or XLS File", accept = c(".RData", ".txt", ".csv", ".xls"))
+               p("Takes file for network B from 'Comparison' tab if no file is selected here."),
+               fileInput("fileB3", "select .RData, .txt, .csv or .xls file", accept = c(".RData", ".txt", ".csv", ".xls"))
         ),
         column(3,
-               textInput("negcol3", "Color of negative edges", value = "blue"),
-               textInput("poscol3", "Color of positive edges", value = "red"),
-               numericInput("multiplier3", "Multiplier with edge weight", value=4)
+               textInput("negcol3", "color of edges with negative association", value = "blue"),
+               textInput("poscol3", "color of edges with positive association", value = "red"),
+               numericInput("multiplier3", "multiplier for edge width", value=4)
         ),
         column(3,
-               selectInput("layout3", "Layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
-               selectInput("curve3", "Edge curved", choices=list(TRUE, FALSE)),
-               sliderInput("vSize3", "Vertice Size", min=8, max=50, value=16),
-               sliderInput("tSize3", "Text Size", min=0.4, max=2.5, value=0.8)
+               selectInput("layout3", "layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
+               selectInput("curve3", "curved edges", choices=list(TRUE, FALSE)),
+               sliderInput("vSize3", "node size", min=8, max=50, value=16),
+               sliderInput("tSize3", "text size", min=0.4, max=2.5, value=0.8)
         ),
         column(3,
                selectInput("method3", "Method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
-               selectInput("adj.method3", "Adjust method", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
-               numericInput("tun.ebic3", "Number for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
+               selectInput("adj.method3", "p-value adjustment method in network estimation", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
+               numericInput("tun.ebic3", "tuning parameter for EBICglasso",min = 0,max = 1, step = 0.01, value = 0)#,Distcorr = list("DistCorr"))),
         )
       ),
       mainPanel(width = 12, plotOutput("plot3"))
@@ -94,25 +94,25 @@ ui <- basicPage(
       shinybusy::add_busy_spinner(spin = "fading-circle"),
       fluidRow(
         column(3,
-               p("Takes file for Network A and B from 'Comparison'-Tab if no file is selected here."),
-               fileInput("fileA5", "Choose RData, TXT, CSV or XLS File for Network A", accept = c(".RData", ".txt", ".csv", ".xls")),
-               fileInput("fileB5", "Choose RData, TXT, CSV or XLS File for Network B", accept = c(".RData", ".txt", ".csv", ".xls"))
+               p("Takes files for networks A and B from 'Comparison' tab if no files are selected here."),
+               fileInput("fileA5", "select .RData, .txt, .csv or .xls file for network A", accept = c(".RData", ".txt", ".csv", ".xls")),
+               fileInput("fileB5", "select .RData, .txt, .csv or .xls file for network B", accept = c(".RData", ".txt", ".csv", ".xls"))
         ),
         column(3,
-               textInput("negcol5", "Color of negative edges", value = "blue"),
-               textInput("poscol5", "Color of positive edges", value = "red"),
-               numericInput("multiplier5", "Multiplier with edge weight", value=4)
+               textInput("negcol5", "color of edges with negative association", value = "blue"),
+               textInput("poscol5", "color of edges with positive association", value = "red"),
+               numericInput("multiplier5", "multiplier for edge width", value=4)
         ),
         column(3,
-               selectInput("layout5", "Layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
-               selectInput("curve5", "Edge curved", choices=list(TRUE, FALSE)),
-               sliderInput("vSize5", "Vertice Size", min=8, max=50, value=16),
-               sliderInput("tSize5", "Text Size", min=0.4, max=2.5, value=0.8)
+               selectInput("layout5", "layout", choices=list("layout.auto", "layout.circle", "layout.davidson.harel", "layout.drl", "layout.fruchterman.reingold", "layout.fruchterman.reingold.grid", "layout.gem", "layout.graphopt", "layout.grid", "layout.kamada.kawai", "layout.lgl", "layout.mds", "layout.reingold.tilford", "layout.spring", "layout.star", "layout.svd")),
+               selectInput("curve5", "curved edges", choices=list(TRUE, FALSE)),
+               sliderInput("vSize5", "node size", min=8, max=50, value=16),
+               sliderInput("tSize5", "text size", min=0.4, max=2.5, value=0.8)
         ),
         column(3,
-               selectInput("method5", "Method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
-               selectInput("adj.method5", "Adjust method", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
-               numericInput("tun.ebic5", "Number for EBICglasso",min = 0, step = 0.3, value = 0)#,Distcorr = list("DistCorr"))),
+               selectInput("method5", "network estimation method to create adjacency matrix", choices = list("Spearman","PCSpearman","Spearman.adj","PCSpearman.adj", "DistCorr", "DistCorr.adj", "EBICglasso")),
+               selectInput("adj.method5", "p-value adjustment method in network estimation", choices = list("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")),
+               numericInput("tun.ebic5", "tuning parameter for EBICglasso",min = 0, step = 0.3, value = 0)#,Distcorr = list("DistCorr"))),
         )
       ),
       mainPanel(width = 12,plotOutput("plot5"))
@@ -120,9 +120,14 @@ ui <- basicPage(
   )
 )
 
-#' Server
+#' Server function for Shiny app
 #' @description
-#' Server for the ShinyApp.
+#' Server function for Shiny app
+#' @param input list-like object containing all the input data sent from the browser, named according to the input ID
+#' @param output list-like object, named according to the output ID
+#' @param session environment that can be employed to access information and functionality with respect to the session
+#' @details As one never calls the server function by oneself, one will never create the three argument objects by oneself. Instead, they are created by Shiny when the session starts, connecting back to a specific session.
+#' @return Server function for Shiny app
 #' @export
 #'
 server <- function(input,output, session){
@@ -190,17 +195,17 @@ server <- function(input,output, session){
     req(fileB)
 
     extA <- tools::file_ext(fileA$datapath)
-    validate(need(extA %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file for Network A"))
+    validate(need(extA %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file for network A"))
 
     extB <- tools::file_ext(fileB$datapath)
-    validate(need(extB %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file for Network B"))
+    validate(need(extB %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file for network B"))
 
     shinybusy::show_spinner()
 
     dataA <- import.table(fileA$datapath)
     dataB <- import.table(fileB$datapath)
 
-    graph.plot(A = dataA, B = dataB, methodlist = list(input$method, input$adj.method, input$tun.ebic), thresh = 0.05, cluster = TRUE, negcol = input$negcol, poscol = input$poscol, multiplier = input$multiplier, curved = input$curve, layout = layout.func(input$layout), vSize = input$vSize, tSize = input$tSize)
+    comp.plot(A = dataA, B = dataB, methodlist = list(input$method, input$adj.method, input$tun.ebic), thresh = 0.05, cluster = TRUE, negcol = input$negcol, poscol = input$poscol, multiplier = input$multiplier, curved = input$curve, layout = layout.func(input$layout), vSize = input$vSize, tSize = input$tSize)
 
     shinybusy::hide_spinner()
   })
@@ -216,14 +221,14 @@ server <- function(input,output, session){
     req(file)
 
     ext <- tools::file_ext(file$datapath)
-    validate(need(ext %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file"))
+    validate(need(ext %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file"))
 
     shinybusy::show_spinner()
 
     dataA <- import.table(file$datapath)
     dataB <- matrix(0, nrow = length(dataA), ncol = length(dataA))
 
-    graph.plot(A = dataA, B = dataB, methodlist = list(input$method2, input$adj.method2, input$tun.ebic2), networkA = TRUE, networkB = FALSE, thresh = 0.05, cluster = TRUE, negcol = input$negcol2, poscol = input$poscol2, multiplier = input$multiplier2, curved = input$curve2, layout = layout.func(input$layout2), vSize = input$vSize2, tSize = input$tSize2)
+    comp.plot(A = dataA, B = dataB, methodlist = list(input$method2, input$adj.method2, input$tun.ebic2), networkA = TRUE, networkB = FALSE, thresh = 0.05, cluster = TRUE, negcol = input$negcol2, poscol = input$poscol2, multiplier = input$multiplier2, curved = input$curve2, layout = layout.func(input$layout2), vSize = input$vSize2, tSize = input$tSize2)
 
     shinybusy::hide_spinner()
   })
@@ -239,14 +244,14 @@ server <- function(input,output, session){
     req(file)
 
     ext <- tools::file_ext(file$datapath)
-    validate(need(ext %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file"))
+    validate(need(ext %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file"))
 
     shinybusy::show_spinner()
 
     dataB <- import.table(file$datapath)
     dataA <- matrix(0, nrow = length(dataB), ncol = length(dataB))
 
-    graph.plot(A = dataA, B = dataB, methodlist = list(input$method3, input$adj.method3, input$tun.ebic3), networkA = FALSE, networkB = TRUE, thresh = 0.05, cluster = TRUE, negcol = input$negcol3, poscol = input$poscol3, multiplier = input$multiplier3, curved = input$curve3, layout = layout.func(input$layout3), vSize = input$vSize3, tSize = input$tSize3)
+    comp.plot(A = dataA, B = dataB, methodlist = list(input$method3, input$adj.method3, input$tun.ebic3), networkA = FALSE, networkB = TRUE, thresh = 0.05, cluster = TRUE, negcol = input$negcol3, poscol = input$poscol3, multiplier = input$multiplier3, curved = input$curve3, layout = layout.func(input$layout3), vSize = input$vSize3, tSize = input$tSize3)
 
     shinybusy::hide_spinner()
   })
@@ -267,31 +272,29 @@ server <- function(input,output, session){
     req(fileB)
 
     extA <- tools::file_ext(fileA$datapath)
-    validate(need(extA %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file for Network A"))
+    validate(need(extA %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file for network A"))
 
     extB <- tools::file_ext(fileB$datapath)
-    validate(need(extB %in% c("RData", "csv", "xls", "txt"), "Please upload a RData, xls, csv or txt file for Network B"))
+    validate(need(extB %in% c("RData", "csv", "xls", "txt"), "please upload a .RData, .xls, .csv or .txt file for network B"))
 
     shinybusy::show_spinner()
 
     dataA <- import.table(fileA$datapath)
     dataB <- import.table(fileB$datapath)
 
-    graph.plot(A = dataA, B = dataB, methodlist = list(input$method5, input$adj.method5, input$tun.ebic5), thresh = 0.05, cluster = FALSE, negcol = input$negcol5, poscol = input$poscol5, multiplier = input$multiplier5,  curved = input$curve5, layout = layout.func(input$layout5), vSize = input$vSize5, tSize = input$tSize5)
+    comp.plot(A = dataA, B = dataB, methodlist = list(input$method5, input$adj.method5, input$tun.ebic5), thresh = 0.05, cluster = FALSE, negcol = input$negcol5, poscol = input$poscol5, multiplier = input$multiplier5,  curved = input$curve5, layout = layout.func(input$layout5), vSize = input$vSize5, tSize = input$tSize5)
 
     shinybusy::hide_spinner()
   })
 }
 
-#' Layout function
+#' Creates layout function
 #' @description
-#' Layout function turns the layout-String into the suitable function.
-#' @param layout The layout as a String.
+#' This function transforms a layout string from the igraph package into a corresponding layout function.
+#' @param layout the layout as a string
 #' @details
-#' If the String is not a existing layout the layout function is automatically layout.auto.
-#' @return The suitable layout function.
-#' @examples
-#' layout.func("layout.fruchterman.reingold")
+#' This function transforms a layout string from the igraph package into a corresponding layout function. If the string does not represent an existing layout from the igraph package, the layout function is automatically set to layout.auto.
+#' @return the corresponding layout function
 #' @export
 layout.func <- function(layout){
   if(layout == "layout.circle"){
@@ -346,19 +349,19 @@ layout.func <- function(layout){
 }
 
 
-#' Import table
+#' Imports an external table into R
 #' @description
-#' The function loads a table out of an extern file into R.
-#' @param directory The directory to the file that should be loaded into R as a tibble.
+#' This function imports an external table into R.
+#' @param directory the directory to the external table that should be imported into R
 #' @details
-#' The function will only keep the columns with integers or doubles and the function can work with RData, text, excel, csv files.
+#' This function imports an external table into R. It causes that only columns with integers or doubles are kept and works with .RData, .txt, .xls and .csv files as input.
 #' @return
-#' The data loaded out of the data file.
+#' the imported data table
 #' @export
 #'
 import.table <- function(directory){
   ending <- tools::file_ext(directory)
-  stopifnot("This data format is not supported" = ending %in% c("xls", "RData", "csv", "txt"))
+  stopifnot("this data format is not supported" = ending %in% c("xls", "RData", "csv", "txt"))
   table <- 0
   if(ending == "RData"){
     table <- get(load(directory))
@@ -375,10 +378,11 @@ import.table <- function(directory){
   table <- dplyr::select(table, where(is.double), where(is.integer))
   return(table)
 }
+utils::globalVariables("where")
 
-#' Create App
+#' Creates Shiny app
 #' @description
-#' Creates the Shiny App of the Differential Network Tests
+#' Creates the Shiny app corresponding to the DNT package
 #' @export
 create.app <- function(){
   shinyApp(ui, server)

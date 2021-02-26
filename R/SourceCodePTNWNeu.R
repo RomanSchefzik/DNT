@@ -1,19 +1,32 @@
-
 ###1.) Network estimation
 
-#' Create Adjacency Matrix
+#' Creates adjacency matrix
 #' @description
-#' The method creates an adjacency matrix out of the matrix A with the methods specified in the attribute methodlist.
-#' @param A a matrix.
-#' @param methodlist the methods used to create the adjacency matrix.
-#' @param thresh the threshold under which the values of the correlations are relevant.
+#' This function creates an adjacency matrix out of an input data table, using an estimation method specified by the user.
+#' @param A input data table from which the adjacency matrix will be generated, to be provided in form of a matrix, array, data frame or tibble
+#' @param methodlist a list specifying the method which is used to estimate and create the adjacency matrix; see details for further information
+#' @param thresh a number between 0 and 1 (default is set to 0.05) specifying the singificance level: if the p-value corresponding to an edge weight is greater than \code{thresh}, the corresponding edge weight is not considered to be significant and thus set to zero
 #' @details
-#' To show the meaning of a certain value in the adjacency matrix, the titles of the columns of the matrix A are used
-#' as titles of the rows and the columns of the adjacency matrix.
-#' @return The adjacency matrix resulting from the matrix A.
+#' This function creates an adjacency matrix out of an input data table, using an estimation method specified by the user. The network estimation method has to be specified in form of a list in the \code{methodlist} argument. Currently, the following estimation methods are supported:
+#' \itemize{
+#' \item{\code{list("Spearman")} \cr Edge weights are estimated using Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("Spearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("Spearman.adj",adjustment method)} \cr Edge weights are estimated using Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("Spearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("PCSpearman")} \cr Edge weights are estimated using partial Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("PCSpearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("PCSpearman.adj",adjustment method)} \cr Edge weights are estimated using partial Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("PCSpearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("DistCorr")} \cr Edge weights are estimated using distance correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("DistCorr")} has to be provided in the \code{methodlist} argument. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("DistCorr.adj",adjustment method)} \cr Edge weights are estimated using distance correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("DistCorr.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("EBICglasso",correlation type,tuning parameter)} \cr Edge weights are estimated using the EBICglasso approach. To apply this method, the expression \code{list("EBICglasso",correlation type,tuning parameter)} has to be provided in the \code{methodlist} argument. Here, \code{correlation type} has to be one of the association options provided by the standard \code{cor} R function, i.e. one of \code{"kendall"}, \code{"pearson"} or \code{"spearman"}. Moreover, \code{tuning parameter} has to be a number specifying the EBIC tuning parameter \eqn{\gamma}. Typical choices include values between 0 and 0.5, where smaller values usually lead to a higher sensitivity in that more edges are included into the network. \cr Note that for EBICglasso, an additional specification of the \code{thresh} argument is obsolete, as it is not used for the application of the method.}
+#' }
+#' @return the adjacency matrix generated from the input data table \code{A} according to the specified estimation method
 #' @examples
-#' create.adjacency.matrix(A,list("Spearman"))
-#' create.adjacency.matrix(A,list("DistCorr.adj", "holm"))
+#' create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' create.adjacency.matrix(ExDataA,methodlist=list("Spearman.adj","bonferroni"))
+#' create.adjacency.matrix(ExDataA,methodlist=list("PCSpearman"),thresh=0.1)
+#' create.adjacency.matrix(ExDataA,methodlist=list("PCSpearman.adj","BH"),thresh=0.1)
+#' create.adjacency.matrix(ExDataA,methodlist=list("DistCorr"))
+#' create.adjacency.matrix(ExDataA,methodlist=list("DistCorr.adj","bonferroni"))
+#' create.adjacency.matrix(ExDataB,methodlist=list("EBICglasso","spearman",0.1))
+#' create.adjacency.matrix(ExDataB,methodlist=list("EBICglasso","pearson",0.05))
 #' @export
 #'
 create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
@@ -134,23 +147,35 @@ create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
   }
 
 
-#' Create Graph
+#' Creates \code{igraph} graph and MST results
 #' @description
-#' The method creates an graph out of the matrix A.
-#' @param A a matrix.
-#' @param methodlist the methods used to create the adjacency matrix.
-#' @param thresh the threshold under which the values of the correlations are relevant.
+#' This function creates \code{igraph} graph and corresponding minimum spanning tree (MST) results from an adjacency matrix that is produced out of an input data table, using an estimation method specified by the user.
+#' @param A input data table from which the adjacency matrix will be generated, to be provided in form of a matrix, array, data frame or tibble
+#' @param methodlist a list specifying the method which is used to estimate and create the adjacency matrix; see details for further information
+#' @param thresh a number between 0 and 1 (default is set to 0.05) specifying the singificance level: if the p-value corresponding to an edge weight is greater than \code{thresh}, the corresponding edge weight is not considered to be significant and thus set to zero
 #' @details
-#' To create the graph (adjacency) out of any matrix A this matrix needs to be converted into an adjacency matrix. This is
-#' done by the method create.adjacency.matrix. Then many of the graphs characteristics are evaluated and saved in variables.
-#' With the help of Prim's Algorithm the graph (adjacency) is converted into a minimum spanning tree (short: MST) of which
-#' the same characteristics are evaluated.
-#' @return create.graph returns a list of the adjacency matrix, the graph, the graph communities, the graph clustering and
-#' the graphs vertex degrees, number of edges, number of clusters and number of isolated nodes. Followed by the minimum
-#' spanning tree, its communities, its clustering and the MSTs vertex degrees, number of edges, number of clusters and
-#' number of isolated nodes.
+#' This function creates \code{igraph} graph and corresponding minimum spanning tree (MST; derived using Prim's algorithm) results from an adjacency matrix that is produced out of an input data table, using an estimation method specified by the user. The function builds on respective implementations in the \code{igraph} R package.
+#' \cr
+#' The network estimation method has to be specified in form of a list in the \code{methodlist} argument. Currently, the following estimation methods are supported:
+#' \itemize{
+#' \item{\code{list("Spearman")} \cr Edge weights are estimated using Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("Spearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("Spearman.adj",adjustment method)} \cr Edge weights are estimated using Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("Spearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("PCSpearman")} \cr Edge weights are estimated using partial Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("PCSpearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("PCSpearman.adj",adjustment method)} \cr Edge weights are estimated using partial Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("PCSpearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("DistCorr")} \cr Edge weights are estimated using distance correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("DistCorr")} has to be provided in the \code{methodlist} argument. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("DistCorr.adj",adjustment method)} \cr Edge weights are estimated using distance correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("DistCorr.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("EBICglasso",correlation type,tuning parameter)} \cr Edge weights are estimated using the EBICglasso approach. To apply this method, the expression \code{list("EBICglasso",correlation type,tuning parameter)} has to be provided in the \code{methodlist} argument. Here, \code{correlation type} has to be one of the association options provided by the standard \code{cor} R function, i.e. one of \code{"kendall"}, \code{"pearson"} or \code{"spearman"}. Moreover, \code{tuning parameter} has to be a number specifying the EBIC tuning parameter \eqn{\gamma}. Typical choices include values between 0 and 0.5, where smaller values usually lead to a higher sensitivity in that more edges are included into the network. \cr Note that for EBICglasso, an additional specification of the \code{thresh} argument is obsolete, as it is not used for the application of the method.}
+#' }
+#' @return a list with 15 elements: the adjacency matrix, the \code{igraph} graph, the graph communities (derived by the Girvan-Newman algorithm based on edge betweenness), the graph clustering, the graph vertex degrees, the graph number of edges, the graph number of clusters, the graph number of isolated nodes, the minimum spanning tree (MST), the MST communities (derived by the Girvan-Newman algorithm based on edge betweenness), the MST clustering, the MST vertex degrees, the MST number of edges, the MST number of clusters and the MST number of isolated nodes
 #' @examples
-#' create.graph(A,list("Spearman"))
+#' create.graph(ExDataA,methodlist=list("Spearman"))
+#' create.graph(ExDataA,methodlist=list("Spearman.adj","bonferroni"))
+#' create.graph(ExDataA,methodlist=list("PCSpearman"),thresh=0.1)
+#' create.graph(ExDataA,methodlist=list("PCSpearman.adj","BH"),thresh=0.1)
+#' create.graph(ExDataA,methodlist=list("DistCorr"))
+#' create.graph(ExDataA,methodlist=list("DistCorr.adj","bonferroni"))
+#' create.graph(ExDataB,methodlist=list("EBICglasso","spearman",0.1))
+#' create.graph(ExDataB,methodlist=list("EBICglasso","pearson",0.05))
 #' @export
 #'
 create.graph<-function (A, methodlist, thresh = 0.05)
@@ -209,18 +234,20 @@ create.graph<-function (A, methodlist, thresh = 0.05)
 
 
 
-###2.) Network differneces
+###2.) Network differences
 
 ######(i) overall network difference characteristics
 
-#' Frobenius metric
-#' @description The method calculates the Frobenius metric.
-#' @param A,B are matrices.
+#' Calculates the Frobenius metric
+#' @description This function calculates the Frobenius metric between two adjacency matrices of the same dimension.
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their overall network characteristics.
-#' @return The frobenius metric of the two adjacency matrices \code{A} and \code{B}.
+#' This function calculates the Frobenius metric between two adjacency matrices of the same dimension. The Frobenius metric is an overall characteristic that can be employed to compare two networks.
+#' @return the Frobenius metric between the two adjacency matrices \code{A} and \code{B}
 #' @examples
-#' frobenius.metric(matrix(3,2), matrix(2,2))
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+#' frobenius.metric(A,B)
 #' @export
 #'
 frobenius.metric<-function(A,B){
@@ -232,14 +259,16 @@ frobenius.metric<-function(A,B){
   return(output)
 }
 
-#' Maximum metric
-#' @description The method calculates the Maximum metric.
-#' @param A,B matices.
+#' Calculates the maximum metric
+#' @description This function calculates the maximum metric between two adjacency matrices of the same dimension.
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their overall network characteristics.
-#' @return The Maximum metric of the two adjacency matrices \code{A} and \code{B}.
+#' This function calculates the maximum metric between two adjacency matrices of the same dimension. The maximum metric is an overall characteristic that can be employed to compare two networks.
+#' @return the maximum metric between the two adjacency matrices \code{A} and \code{B}
 #' @examples
-#' maximum.metric(matrix(3,2), matrix(2,2))
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+#' maximum.metric(A,B)
 #' @export
 #'
 maximum.metric<-function(A,B){
@@ -252,14 +281,16 @@ maximum.metric<-function(A,B){
 }
 
 
-#' Spectral distance
-#' @description The method calculates the Spectral distance.
-#' @param A,B are matrices.
+#' Calculates the spectral distance
+#' @description This function calculates the spectral distance between two adjacency matrices of the same dimension.
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their overall network characteristics.
-#' @return The spectral distance of the two adjacency matrices \code{A} and \code{B}.
+#' This function calculates the spectral distance between two adjacency matrices of the same dimension. The spectral distance is an overall characteristic that can be employed to compare two networks.
+#' @return the spectral distance between the two adjacency matrices \code{A} and \code{B}
 #' @examples
-#' spec.dist(matrix(3,2), matrix(2,2))
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+#' spec.dist(A,B)
 #' @export
 #'
 spec.dist<-function(A,B){
@@ -272,14 +303,16 @@ spec.dist<-function(A,B){
 }
 
 
-#' Global strength
-#' @description The method calculates the Global strength.
-#' @param A,B are matrices.
+#' Calculates the difference with respect to global strength
+#' @description This function calculates the difference with respect to the global strength between two adjacency matrices of the same dimension.
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their overall network characteristics.
-#' @return The global strength of the two adjacency matrices \code{A} and \code{B}.
+#' This function calculates the difference with respect to the global strength between two adjacency matrices of the same dimension. The global strength is an overall characteristic that can be employed to compare two networks.
+#' @return the difference with respect to the global strength between the two adjacency matrices \code{A} and \code{B}.
 #' @examples
-#' global.str(matrix(3,2), matrix(2,2))
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+#' global.str(A,B)
 #' @export
 #'
 global.str<-function(A,B){
@@ -292,29 +325,27 @@ global.str<-function(A,B){
 }
 
 
-
-##########################characteristics used by Asada et al. (2016)
-
-#' Differences between two graphs
-#' @description The method calculates differences between two graphs.
-#' @param A,B are results from the function create.graph.
+#' Calculates the differences with respect to the number of edges, clusters and isolated nodes between two networks
+#' @description This function calculates the differences with respect to the number of edges, clusters (obtained by the Girvan-Newman algorithm) and isolated nodes (i.e. nodes without any edge) between two networks, for both \code{igraph} graphs and the corresponding minimum spanning trees (MSTs).
+#' @param A,B output results when applying the function \code{create.graph} to two data tables from which the two networks are constructed
 #' @details
-#' One of the methods to compare two networks on their overall network characteristics.
-#' @return A list of the differences in the number of edges, clusters and isolated nodes of the graph and the corresponding
-#' minimum spanning tree.
+#' This function calculates the differences with respect to the number of edges, clusters (obtained by the Girvan-Newman algorithm) and isolated nodes (i.e. nodes without any edge) between two networks, for both \command{igraph} graphs and the corresponding minimum spanning trees (MSTs). It builds on the \command{create.graph} function, which creates \command{igraph} graph and corresponding MST results from adjacency matrices that are produced out of input tables, using an estimation method specified by the user; see the documentation of \command{create.graph} for further information. Differences in numbers of edges, clusters and isolated nodes are overall characteristics that can be employed to compare two networks.
+#' @return a vector of length 6 containing the graph difference in the number of edges, the graph difference in the number of clusters, the graph difference in the number of isolated nodes, the MST difference in the number of edges, the MST difference in the number of clusters and the MST difference in the number of isolated nodes
 #' @examples
-#' number.differences(create.graph(A, list("Spearman")),create.graph(B, list("Spearman")))
+#' A<-create.graph(ExDataA,methodlist=list("Spearman"))
+#' B<-create.graph(ExDataB,methodlist=list("Spearman"))
+#' number.differences(A,B)
 #' @export
 #'
 number.differences<-function(A,B){
 
-  stopifnot(`A and B need to be adjacency matrices.` = class(A[[1]])==c("matrix","array") && class(B[[1]])==c("matrix","array")
-                                                       && nrow(A[[1]])==ncol(A[[1]]) && nrow(B[[1]])==ncol(B[[1]]),
+  stopifnot(`A and B need to be adjacency matrices.` = class(A[[1]]) %in% c("matrix","array") && class(B[[1]]) %in% c("matrix","array")
+            && nrow(A[[1]])==ncol(A[[1]]) && nrow(B[[1]])==ncol(B[[1]]),
             `The listelements 6, 7, 8, 13, 14 and 15 need to be numbers. (This is the case if A and B are results of the function create.graph.)` =
-                  all(lapply(A, class)[6:8] %in% c("numeric", "integer")) &&
-                  all(lapply(B, class)[6:8] %in% c("numeric", "integer")) &&
-                  all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &&
-                  all(lapply(B, class)[13:15] %in% c("numeric", "integer")))
+              all(lapply(A, class)[6:8] %in% c("numeric", "integer")) &&
+              all(lapply(B, class)[6:8] %in% c("numeric", "integer")) &&
+              all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &&
+              all(lapply(B, class)[13:15] %in% c("numeric", "integer")))
 
   if(all(A[[1]]==0) | all(B[[1]]==0)){
     output<-rep(NA,6)
@@ -339,21 +370,24 @@ number.differences<-function(A,B){
 }
 
 
+
 ######(ii) node-specifc network difference characteristics
 
-#' Degree differneces
-#' @description The method calculates the differences between the degrees of the nodes of two matrices.
-#' @param X,Y are matrices
+#' Calculates differences in degree for each network node
+#' @description This function calculates the differences in degree for each node between two networks (adjacency matrices of the same dimension).
+#' @param X,Y adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their node-specific differences.
-#' @return A vector of the differneces of the degrees of the same nodes in two different networks.
+#' This function calculates the differences in degree for each node between two networks (adjacency matrices of the same dimension). Differences in degree are one of the node-specific network difference characteristics to compare two networks.
+#' @return a vector of length \eqn{N} (number of nodes), containing the differences in degree between the two networks for each node
 #' @examples
+#' X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' degree.inv(X,Y)
 #' @export
 #'
 degree.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
             `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
@@ -388,20 +422,21 @@ degree.inv<-function(X,Y){
 }
 
 
-#' Betweenness
-#' @description A
-#' @param X
-#' @param Y
+#' Calculates differences in betweenness for each network node
+#' @description This function calculates the differences in betweenness for each node between two networks (adjacency matrices of the same dimension).
+#' @param X,Y adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their node-specific differences.
-#' @return Return
+#' This function calculates the differences in betweenness for each node between two networks (adjacency matrices of the same dimension). Differences in betweenness are one of the node-specific network difference characteristics to compare two networks.
+#' @return a vector of length \eqn{N} (number of nodes), containing the differences in betweenness between the two networks for each node
 #' @examples
+#' X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' betweenness.inv(X,Y)
 #' @export
 #'
 betweenness.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
             `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
@@ -435,20 +470,21 @@ betweenness.inv<-function(X,Y){
 }
 
 
-#' Closeness
-#' @description A
-#' @param X
-#' @param Y
+#' Calculates differences in closeness for each network node
+#' @description This function calculates the differences in closeness for each node between two networks (adjacency matrices of the same dimension).
+#' @param X,Y adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their node-specific differences.
-#' @return Return
+#' This function calculates the differences in closeness for each node between two networks (adjacency matrices of the same dimension). Differences in closeness are one of the node-specific network difference characteristics to compare two networks.
+#' @return a vector of length \eqn{N} (number of nodes), containing the differences in closeness between the two networks for each node
 #' @examples
+#' X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' closeness.inv(X,Y)
 #' @export
 #'
 closeness.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
             `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
@@ -483,20 +519,21 @@ closeness.inv<-function(X,Y){
 }
 
 
-#' Eigen
-#' @description A
-#' @param X
-#' @param Y
+#' Calculates differences in eigenvector centrality for each network node
+#' @description This function calculates the differences in eigenvector centrality for each node between two networks (adjacency matrices of the same dimension).
+#' @param X,Y adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their node-specific differences.
-#' @return Return
+#' This function calculates the differences in eigenvector centrality for each node between two networks (adjacency matrices of the same dimension). Differences in eigenvector centrality are one of the node-specific network difference characteristics to compare two networks.
+#' @return a vector of length \eqn{N} (number of nodes), containing the differences in eigenvector centrality between the two networks for each node
 #' @examples
+#' X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' eigen.inv(X,Y)
 #' @export
 #'
 eigen.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X)==c("matrix","array") && class(Y)==c("matrix","array"),
+  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
             `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
@@ -532,15 +569,17 @@ eigen.inv<-function(X,Y){
 
 ######(iii) edge-specific network difference characteristics
 
-##a. "considers directions (signs) of correlations"
+##a. taking account of directions (signs) of correlations
 
-#' Edge with direction
-#' @description A
-#' @param A,B are matrices.
+#' Calculates the differences in edge weight for each network edge
+#' @description This function calculates the differences in edge weight for each edge between two networks (adjacency matrices of the same dimension).
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their edge-specific differneces.
-#' @return Return
+#'This function calculates the differences in edge weight for each edge between two networks (adjacency matrices of the same dimension). In particular, it takes account of potentially different directions (signs) of the edge weights (associations) when deriving the differences. Differences in edge weight are one of the edge-specific network difference characteristics to compare two networks.
+#' @return a symmetric \eqn{N \times N} matrix, with \eqn{N} denoting the number of nodes, containing the differences in edge weight between two respective nodes
 #' @examples
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' edge.inv.direc(A,B)
 #' @export
 #'
@@ -557,16 +596,17 @@ edge.inv.direc<-function(A,B){
 }
 
 
-##b. "does not consider directions (signs) of correlations"
+##b. not taking account of directions (signs) of correlations
 
-#' Edge without direction
-#' @description A
-#' @param A a matrix.
-#' @param B a matrix.
+#'Calculates the differences in absolute edge weight for each network edge
+#' @description This function calculates the differences in absolute edge weight for each edge between two networks (adjacency matrices of the same dimension).
+#' @param A,B adjacency matrices of the same dimension
 #' @details
-#' One of the methods to compare two networks on their edge-specific differneces.
-#' @return Return
+#' This function calculates the differences in absolute edge weight for each edge between two networks (adjacency matrices of the same dimension). In particular, by considering absolute edge weights, it does not take account of directions (signs) of the edge weights (associations) when deriving the differences. Differences in absolute edge weight are one of the edge-specific network difference characteristics to compare two networks.
+#' @return a symmetric \eqn{N \times N} matrix, with \eqn{N} denoting the number of nodes, containing the differences in absolute edge weight between two respective nodes
 #' @examples
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 #' edge.inv(A,B)
 #' @export
 #'
@@ -584,20 +624,70 @@ edge.inv<-function(A,B){
 
 ###3.) Permutation test
 
-#' Permutation test network
-#' @description A
-#' @param A a matrix.
-#' @param B a matrix.
-#' @param permnum the number of permutations.
-#' @param methodlist the methods used to create the adjacency matrices.
-#' @param thresh
-#' @param score.funct the function used to compare the adjacency matrices A and B.
-#' @param paired
+#' Permutation-based test for differences between two networks
+#' @description This function provides a permutation-based frame for testing for differences between two networks. In particular, various (i) network estimation methods and (ii) network difference characteristics can be specified.
+#' @param A,B input data tables from which the adjacency matrices will be generated, to be provided in form of matrices, arrays, data frames or tibbles; need to have the same number of columns (corresponding to the number of nodes)
+#' @param permnum a number, specifying the number of permutations
+#' @param methodlist a list specifying the method which is used to estimate and create the adjacency matrices; see details for possible options and further information
+#' @param thresh a number between 0 and 1 (default is set to 0.05) specifying the singificance level: if the p-value corresponding to an edge weight is greater than \code{thresh}, the corresponding edge weight is not considered to be significant and thus set to zero
+#' @param score.funct the function used to compare the adjacency matrices A and B; see details for possible options and further information
+#' @param paired Boolean, specifying whether the data underlying the two networks is paired or not
 #' @details
-#' Details
-#' @return Return
+#' This function provides a permutation-based frame for testing for differences between two networks. In particular, various (i) network estimation methods and (ii) network difference characteristics can be specified.
+#' \cr
+#' (i) The network estimation method has to be specified in form of a list in the \code{methodlist} argument. Currently, the following estimation methods are supported:
+#' \itemize{
+#' \item{\code{list("Spearman")} \cr Edge weights are estimated using Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("Spearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("Spearman.adj",adjustment method)} \cr Edge weights are estimated using Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("Spearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("PCSpearman")} \cr Edge weights are estimated using partial Spearman correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("PCSpearman")} has to be provided in the \code{methodlist} argument.}
+#' \item{\code{list("PCSpearman.adj",adjustment method)} \cr Edge weights are estimated using partial Spearman correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("PCSpearman.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}.}
+#' \item{\code{list("DistCorr")} \cr Edge weights are estimated using distance correlation, where unadjusted p-values are employed to determine significance. To apply this method, the expression \code{list("DistCorr")} has to be provided in the \code{methodlist} argument. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("DistCorr.adj",adjustment method)} \cr Edge weights are estimated using distance correlation, where p-values adjusted for multiple testing are employed to determine significance. To apply this method, the expression \code{list("DistCorr.adj",adjustment method)} has to be provided in the \code{methodlist} argument, where \code{adjustment method} has to be one of the options for multple testing adjustment provided by the standard \code{p.adjust} R function, i.e. one of \code{"BH"}, \code{"bonferroni"}, \code{"BY"}, \code{"fdr"}, \code{"hochberg"}, \code{"holm"} or \code{"hommel"}. Note that the calculations may require larger computation times, as a permutation test is involved to derive the corresponding p-values for the distance correlations.}
+#' \item{\code{list("EBICglasso",correlation type,tuning parameter)} \cr Edge weights are estimated using the EBICglasso approach. To apply this method, the expression \code{list("EBICglasso",correlation type,tuning parameter)} has to be provided in the \code{methodlist} argument. Here, \code{correlation type} has to be one of the association options provided by the standard \code{cor} R function, i.e. one of \code{"kendall"}, \code{"pearson"} or \code{"spearman"}. Moreover, \code{tuning parameter} has to be a number specifying the EBIC tuning parameter \eqn{\gamma}. Typical choices include values between 0 and 0.5, where smaller values usually lead to a higher sensitivity in that more edges are included into the network. \cr Note that for EBICglasso, an additional specification of the \code{thresh} argument is obsolete, as it is not used for the application of the method.}
+#' }
+#' (ii) To quantify differences between two networks, the following (a) overall, (b) edge-specific and (c) node-specific network difference characteristics, which have to be supplied in the \code{score.funct} argument, are currently supported:
+#' \itemize{
+#' \item{\code{frobenius.metric} (overall)} \cr {Calculates the Frobenius metric between two networks}
+#' \item{\code{global.str} (overall)} \cr {Calculates the difference in global strength between two networks}
+#' \item{\code{maximum.metric} (overall)} \cr {Calculates the maximum metric between two networks}
+#' \item{\code{number.differences} (overall)} \cr {Calculates the differences in numbers of edges, clusters and isolated nodes between two networks}
+#' \item{\code{spec.dist} (overall)} \cr {Calculates the spectral distance between two networks}
+#' \item{\code{betweenness.inv} (node-specific)} \cr {Calclulates the differences in betweenness between two networks for each node}
+#' \item{\code{closeness.inv} (node-specific)} \cr {Calculates the differences in closeness between two networks for each node}
+#' \item{\code{degree.inv} (node-specific)} \cr {Calculates the differences in degree between two networks for each node}
+#' \item{\code{eigen.inv} (node-specific)} \cr {Calculates the differences in eigenvector centrality between two networks for each node}
+#' \item{\code{edge.inv} (edge-specific)} \cr {Calculates the differences in absolute edge weights between two networks for each edge}
+#' \item{\code{edge.inv.direc} (edge-specific)} \cr {Calculates the differences in edge weights between two networks for each edge}
+#' }
+#' Typically, a large number of permutations (e.g. 1000 or 10000) should be chosen in order to obtain reliable results. Note that a large number of permutations may lead to increasing computation times.
+#'
+#' Note that when underlying data is paired (\code{paired=TRUE}), the input data tables need to have exactly the same dimension, i.e. the same number of columns (nodes) AND rows (samples).
+#' @return a list, whose specific structure depends on the specified network difference characteristic in the argument \code{score.funct} (with \eqn{N} denoting the number of nodes):
+#' \itemize{
+#' \item{if \code{score.funct} is one of \code{frobenius.metric}, \code{global.str}, \code{maximum.metric} or \code{spec.dist}:} \cr {a list with 6 elements: the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic (vector of length 1), the values of the test statistics when applying the permutations (vector of length \code{permnum}), the p-value (vector of length 1), the p-value when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length 1)}
+#' \item{if \code{score.funct} is \code{number.differences}:} \cr {a list with 6 elements: output when applying \code{create.graph} to input data table \code{A} (list with 15 elements; see documentation of \code{create.graph} function for details), output when applying \code{create.graph} to input data table \code{B} (list with 15 elements; see documentation of \code{create.graph} function for details), the value of the test statistics (vector of length 6), the values of the test statistics when applying the permutations (\code{permnum}\eqn{\times 6} matrix), the p-values (vector of length 6), the p-values when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length 6)}
+#' \item{if \code{score.funct} is one of \code{betweenness.inv}, \code{closeness.inv}, \code{degree.inv} or \code{eigen.inv}:} \cr {a list with 6 elements: the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic for each node (vector of length \eqn{N}), the values of the test statistics for each node when applying the permutations (\code{permnum}\eqn{\times N} matrix), the p-value for each node (vector of length \eqn{N}), the p-value for each node when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length \eqn{N})}
+#' \item{if \code{score.funct} is one of \code{edge.inv} or \code{edge.inv.direc}:} \cr {a list with 8 elements:  the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic for each node-node pair (\eqn{N \times N} matrix), the values of the test statistics for each node-node pair when applying the permutations (\code{permnum}\eqn{\times N \times N} array), the p-value for each node-node pair (\eqn{N \times N} matrix), the p-value for each node-node pair when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (\eqn{N \times N} matrix), a simplified overview of the p-values for the node-node pairs (\eqn{\frac{N(N-1)}{2} \times 3} matrix; node-node pair in columns 1 and 2, corresponding p-value in column 3), a simplified overview of the p-values for the node-node pairs when inserting a pseudocount in the p-value calculation (\eqn{\frac{N(N-1)}{2} \times 3} matrix; node-node pair in columns 1 and 2, corresponding p-value in column 3)}
+#' }
 #' @examples
-#' perm.test.nw(A = x1, B = x2, permnum = 10, methodlist = list("DistCorr"), thresh = 0.05, score.funct = frobenius.metric)
+#' ##examples using (a) overall network difference characteristics
+#' res1<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("PCSpearman"),
+#' score.funct=frobenius.metric)
+#' res2<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("Spearman"),
+#' score.funct=global.str,paired=TRUE)
+#'
+#' ##examples using (b) node-specific network difference characteristics
+#' res3<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("Spearman"),
+#' thresh=0.1,score.funct=betweenness.inv,paired=TRUE)
+#' res4<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("EBICglasso",
+#' "spearman",0.1), score.funct=degree.inv)
+#'
+#' ##examples using (c) edge-specific network difference characteristics
+#' res5<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("Spearman.adj",
+#' "bonferroni"),score.funct=edge.inv)
+#' res6<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("EBICglasso",
+#' "spearman",0.01),score.funct=edge.inv.direc,paired=TRUE)
+#'
 #' @export
 #'
 perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, paired = FALSE)
@@ -740,7 +830,7 @@ perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, pai
       }
       output <- list(adj.A, adj.B, value.orig, value.perm,
                      pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+      names(output) <- c("adjacency.matrix.A", "adjacency.matrix.B",
                          "test.statistic", "test.statistics.perm",
                          "pvalue", "pvalue.pseudocount")
     }

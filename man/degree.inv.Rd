@@ -2,22 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{degree.inv}
 \alias{degree.inv}
-\title{Degree differneces}
+\title{Calculates differences in degree for each network node}
 \usage{
 degree.inv(X, Y)
 }
 \arguments{
-\item{X, Y}{are matrices}
+\item{X, Y}{adjacency matrices of the same dimension}
 }
 \value{
-A vector of the differneces of the degrees of the same nodes in two different networks.
+a vector of length \eqn{N} (number of nodes), containing the differences in degree between the two networks for each node
 }
 \description{
-The method calculates the differences between the degrees of the nodes of two matrices.
+This function calculates the differences in degree for each node between two networks (adjacency matrices of the same dimension).
 }
 \details{
-One of the methods to compare two networks on their node-specific differences.
+This function calculates the differences in degree for each node between two networks (adjacency matrices of the same dimension). Differences in degree are one of the node-specific network difference characteristics to compare two networks.
 }
 \examples{
+X<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+Y<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
 degree.inv(X,Y)
 }

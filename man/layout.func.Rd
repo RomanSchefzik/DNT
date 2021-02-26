@@ -2,22 +2,19 @@
 % Please edit documentation in R/ShinyApp.R
 \name{layout.func}
 \alias{layout.func}
-\title{Layout function}
+\title{Creates layout function}
 \usage{
 layout.func(layout)
 }
 \arguments{
-\item{layout}{The layout as a String.}
+\item{layout}{the layout as a string}
 }
 \value{
-The suitable layout function.
+the corresponding layout function
 }
 \description{
-Layout function turns the layout-String into the suitable function.
+This function transforms a layout string from the igraph package into a corresponding layout function.
 }
 \details{
-If the String is not a existing layout the layout function is automatically layout.auto.
-}
-\examples{
-layout.func("layout.fruchterman.reingold")
+This function transforms a layout string from the igraph package into a corresponding layout function. If the string does not represent an existing layout from the igraph package, the layout function is automatically set to layout.auto.
 }

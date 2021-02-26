@@ -2,22 +2,24 @@
 % Please edit documentation in R/SourceCodePTNWNeu.R
 \name{global.str}
 \alias{global.str}
-\title{Global strength}
+\title{Calculates the difference with respect to global strength}
 \usage{
 global.str(A, B)
 }
 \arguments{
-\item{A, B}{are matrices.}
+\item{A, B}{adjacency matrices of the same dimension}
 }
 \value{
-The global strength of the two adjacency matrices \code{A} and \code{B}.
+the difference with respect to the global strength between the two adjacency matrices \code{A} and \code{B}.
 }
 \description{
-The method calculates the Global strength.
+This function calculates the difference with respect to the global strength between two adjacency matrices of the same dimension.
 }
 \details{
-One of the methods to compare two networks on their overall network characteristics.
+This function calculates the difference with respect to the global strength between two adjacency matrices of the same dimension. The global strength is an overall characteristic that can be employed to compare two networks.
 }
 \examples{
-global.str(matrix(3,2), matrix(2,2))
+A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+global.str(A,B)
 }
