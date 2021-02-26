@@ -60,14 +60,16 @@ See `?comp.plot` for details.
 comp.plot(A=ExDataA,B=ExDataB,methodlist=list("Spearman"))
 ```
 
-![ScreenShot](/ExampleFigures/ExPlotSpearman.png)
+<p align="center">
+<img src="/ExampleFigures/ExPlotSpearman.png" width="800" height="500">
+</p>
 
 ```
 comp.plot(A=ExDataA,B=ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),layout=igraph::layout.circle,curved=FALSE)
 ```
 
 <p align="center">
-<img src="/ExampleFigures/ExPlotPCSpearmanadj.png" width="600" height="400">
+<img src="/ExampleFigures/ExPlotPCSpearmanadj.png" width="800" height="500">
 </p>
 
 ```
