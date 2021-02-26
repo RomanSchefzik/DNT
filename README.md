@@ -24,7 +24,7 @@ The DNT package can then be loaded using
 
 The DNT package provides an overall frame for testing for differences between two statistical networks based on permutation tests. There are various options for (i) network estimation (i.e. specifying the adjacency matrices) and (ii) network comparison (using various types of overall, node-specifc or edge-specific network difference chacteristics). Moreover, tools for graphical illustrations and comparisons are offered. DNT fuses scattered functions from packages such as igraph, Hmisc, energy and qgraph in an overarching frame for differential network testing. 
 
-The DNT package essentially contains three main functions: `create.adjacency.matrix`, `perm.test.nw` and `graph.plot`.
+The DNT package essentially contains three main functions: `create.adjacency.matrix`, `perm.test.nw` and `comp.plot`.
 
 ### The function `create.adjacency.matrix`
 
@@ -33,9 +33,9 @@ See `?create.adjacency.matrix` for details, in particular on how to exactly set 
 
 #### Examples (using the supplied example data sets `ExDataA` and `ExDataB`)
 ```
-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"),thresh=0.05)
-create.adjacency.matrix(ExDataA,methodlist=list("PCSpearman.adj","BH"),thresh=0.1)
-create.adjacency.matrix(ExDataB,methodlist=list("EBICglasso","spearman",0.1))
+create.adjacency.matrix(A=ExDataA,methodlist=list("Spearman"),thresh=0.05)
+create.adjacency.matrix(A=ExDataA,methodlist=list("PCSpearman.adj","BH"),thresh=0.1)
+create.adjacency.matrix(A=ExDataB,methodlist=list("EBICglasso","spearman",0.1))
 ```
 
 ### The function `perm.test.nw`
@@ -45,21 +45,21 @@ See `?perm.test.nw` for details, in particular on how to exactly set up the `met
 
 #### Examples (using the supplied example data sets `ExDataA` and `ExDataB`)
 ```
-res1<-perm.test.nw(ExDataA,ExDataB,permnum=10000,methodlist=list("Spearman"),thresh=0.05,score.func=global.str,paired=TRUE)
+res1<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("Spearman"),thresh=0.05,score.func=global.str,paired=TRUE)
 res2<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("EBICglasso","spearman",0.1), score.funct=degree.inv)
 res3<-perm.test.nw(A=ExDataA,B=ExDataB,permnum=10000,methodlist=list("Spearman.adj","bonferroni"),score.funct=edge.inv)
 ```
 
-### The function `graph.plot`
+### The function `comp.plot`
 
-The function `graph.plot` provides a tool for visual comparison between two networks, where the above-mentioned methods can be used for network estimation and creating the adjacency matrices. Moreover, several options for setting up the layout and the graphical representation are available. <br/>
-See `?graph.plot` for details.
+The function `comp.plot` provides a tool for visual comparison between two networks, where the above-mentioned methods can be used for network estimation and creating the adjacency matrices. Moreover, several options for setting up the layout and the graphical representation are available. <br/>
+See `?comp.plot` for details.
 
 #### Examples (using the supplied example data sets `ExDataA` and `ExDataB`)
 ```
-graph.plot(ExDataA,ExDataB,methodlist=list("Spearman"))
-graph.plot(ExDataA,ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),layout=igraph::layout.circle,curved=FALSE)
-graph.plot(ExDataA,ExDataB,methodlist=list("EBICglasso","spearman",0.1),layout=igraph::layout.fruchterman.reingold,curved=FALSE)
+comp.plot(A=ExDataA,B=ExDataB,methodlist=list("Spearman"))
+comp.plot(A=ExDataA,B=ExDataB,methodlist=list("PCSpearman.adj","bonferroni"),layout=igraph::layout.circle,curved=FALSE)
+comp.plot(A=ExDataA,B=ExDataB,methodlist=list("EBICglasso","spearman",0.1),layout=igraph::layout.fruchterman.reingold,curved=FALSE)
 ```
 
 ### R Shiny app for visual comparison of two networks
