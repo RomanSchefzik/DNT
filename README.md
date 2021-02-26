@@ -64,7 +64,7 @@ comp.plot(A=ExDataA,B=ExDataB,methodlist=list("EBICglasso","spearman",0.1),layou
 
 ![ScreenShot](/ExampleFigures/ExPlotSpearman.png)
 
-<img src="/ExampleFigures/ExPlotSpearman.png" width="100" height="100">
+<img src="/ExampleFigures/ExPlotSpearman.png" width="500" height="500" class="center">
 
 ### R Shiny app for visual comparison of two networks
 
