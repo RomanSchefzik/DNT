@@ -182,8 +182,8 @@ create.graph<-function (A, methodlist, thresh = 0.05)
   {
     cm <- create.adjacency.matrix(A, methodlist, thresh)
     if (all(cm == 0)) {
-      output <- list(cm, NA, NA, NA, NA, 0, 0, ncol(cm), NA, NA,
-                     NA, NA, 0, 0, ncol(cm))
+      output <- list(cm, NA, NA, NA, NA, 0, ncol(cm), ncol(cm), NA, NA,
+                     NA, NA, 0, ncol(cm), ncol(cm))
       names(output) <- c("adjacency matrix", "graph",
                          "graph communities", "graph clustering",
                          "graph vertex degrees", "graph number of edges",
@@ -347,11 +347,6 @@ number.differences<-function(A,B){
               all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &&
               all(lapply(B, class)[13:15] %in% c("numeric", "integer")))
 
-  if(all(A[[1]]==0) | all(B[[1]]==0)){
-    output<-rep(NA,6)
-    names(output)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST diff num of isolated nodes")
-    return(output)
-  }else{
 
     dnumedges.g<-abs(A[[6]]-B[[6]])
     dnumclus.g<-abs(A[[7]]-B[[7]])
@@ -367,7 +362,7 @@ number.differences<-function(A,B){
     names(output)<-c("Graph Diff num of edges","Graph Diff num of clusters","Graph diff num of isolated nodes","MST Diff num of edges","MST Diff num of clusters","MST diff num of isolated nodes")
     return(output)
   }
-}
+
 
 
 

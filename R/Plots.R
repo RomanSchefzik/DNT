@@ -206,7 +206,7 @@ create.Igraphclustering<-function (A, methodlist, thresh = 0.05)
   if (all(cm.x1 == 0) == TRUE) {
     numbervertices <- length(A)
     g.x1 <- igraph::make_empty_graph(n = numbervertices)
-    igraph::V(g.x1)$name <- names(A)
+    igraph::V(g.x1)$name <- colnames(A)
     g.clustering.x1 <- NULL
   }
   else {
