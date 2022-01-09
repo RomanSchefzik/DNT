@@ -303,6 +303,47 @@ spec.dist<-function(A,B){
 }
 
 
+#' Calculates the Jaccard distance
+#' @description This function calculates the Jaccard distance between two adjacency matrices of the same dimension.
+#' @param A,B adjacency matrices of the same dimension
+#' @details
+#' This function calculates the Jaccard distance between two adjacency matrices of the same dimension. The Jaccard distance is an overall characteristic that can be employed to compare two networks.
+#' @return the Jaccard distance between the two adjacency matrices \code{A} and \code{B}
+#' @examples
+#' A<-create.adjacency.matrix(ExDataA,methodlist=list("Spearman"))
+#' B<-create.adjacency.matrix(ExDataB,methodlist=list("Spearman"))
+#' jaccard.dist(A,B)
+#' @export
+#'
+jaccard.dist<-function(A,B){
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
+              (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
+            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+
+
+  A.new <- data.frame(var1 = rownames(A)[row(A)[upper.tri(A)]],
+                      var2 = colnames(A)[col(A)[upper.tri(A)]],
+                      corr.val = A[upper.tri(A)])
+  idx.A<-which(A.new[,"corr.val"]!=0)
+  edges.A<-paste0(paste0(A.new[idx.A,"var1"],"-"),A.new[idx.A,"var2"])
+
+
+  B.new <- data.frame(var1 = rownames(B)[row(B)[upper.tri(B)]],
+                      var2 = colnames(B)[col(B)[upper.tri(B)]],
+                      corr.val = B[upper.tri(B)])
+  idx.B<-which(B.new[,"corr.val"]!=0)
+  edges.B<-paste0(paste0(B.new[idx.B,"var1"],"-"),B.new[idx.B,"var2"])
+
+  len.intersect.AB<-length(intersect(edges.A,edges.B))
+  len.union.AB<-length(edges.A)+length(edges.B)-len.intersect.AB
+  jaccard.index<-len.intersect.AB/len.union.AB
+
+  output<-1-jaccard.index
+  return(output)
+}
+
+
+
 #' Calculates the difference with respect to global strength
 #' @description This function calculates the difference with respect to the global strength between two adjacency matrices of the same dimension.
 #' @param A,B adjacency matrices of the same dimension
@@ -488,7 +529,7 @@ closeness.inv<-function(X,Y){
     A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
   }else{
     A<-igraph::graph.adjacency(X,weighted=TRUE, mode="undirected", diag=FALSE)
-    # Simplfy the adjacency object
+    # Simplify the adjacency object
     A<-igraph::simplify(A, remove.multiple=TRUE, remove.loops=TRUE)
     # Convert edge weights to absolute values
     igraph::E(A)$weight <- abs(igraph::E(A)$weight)
@@ -647,6 +688,7 @@ edge.inv<-function(A,B){
 #' \item{\code{maximum.metric} (overall)} \cr {Calculates the maximum metric between two networks}
 #' \item{\code{number.differences} (overall)} \cr {Calculates the differences in numbers of edges, clusters and isolated nodes between two networks}
 #' \item{\code{spec.dist} (overall)} \cr {Calculates the spectral distance between two networks}
+#' \item{\code{jaccard.dist} (overall)} \cr {Calculates the Jaccard distance between two networks}
 #' \item{\code{betweenness.inv} (node-specific)} \cr {Calclulates the differences in betweenness between two networks for each node}
 #' \item{\code{closeness.inv} (node-specific)} \cr {Calculates the differences in closeness between two networks for each node}
 #' \item{\code{degree.inv} (node-specific)} \cr {Calculates the differences in degree between two networks for each node}
@@ -659,7 +701,7 @@ edge.inv<-function(A,B){
 #' Note that when underlying data is paired (\code{paired=TRUE}), the input data tables need to have exactly the same dimension, i.e. the same number of columns (nodes) AND rows (samples).
 #' @return a list, whose specific structure depends on the specified network difference characteristic in the argument \code{score.funct} (with \eqn{N} denoting the number of nodes):
 #' \itemize{
-#' \item{if \code{score.funct} is one of \code{frobenius.metric}, \code{global.str}, \code{maximum.metric} or \code{spec.dist}:} \cr {a list with 6 elements: the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic (vector of length 1), the values of the test statistics when applying the permutations (vector of length \code{permnum}), the p-value (vector of length 1), the p-value when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length 1)}
+#' \item{if \code{score.funct} is one of \code{frobenius.metric}, \code{global.str}, \code{maximum.metric}, \code{spec.dist} or \code{jaccard.dist}:} \cr {a list with 6 elements: the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic (vector of length 1), the values of the test statistics when applying the permutations (vector of length \code{permnum}), the p-value (vector of length 1), the p-value when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length 1)}
 #' \item{if \code{score.funct} is \code{number.differences}:} \cr {a list with 6 elements: output when applying \code{create.graph} to input data table \code{A} (list with 15 elements; see documentation of \code{create.graph} function for details), output when applying \code{create.graph} to input data table \code{B} (list with 15 elements; see documentation of \code{create.graph} function for details), the value of the test statistics (vector of length 6), the values of the test statistics when applying the permutations (\code{permnum}\eqn{\times 6} matrix), the p-values (vector of length 6), the p-values when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length 6)}
 #' \item{if \code{score.funct} is one of \code{betweenness.inv}, \code{closeness.inv}, \code{degree.inv} or \code{eigen.inv}:} \cr {a list with 6 elements: the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic for each node (vector of length \eqn{N}), the values of the test statistics for each node when applying the permutations (\code{permnum}\eqn{\times N} matrix), the p-value for each node (vector of length \eqn{N}), the p-value for each node when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (vector of length \eqn{N})}
 #' \item{if \code{score.funct} is one of \code{edge.inv} or \code{edge.inv.direc}:} \cr {a list with 8 elements:  the adjacency matrix for input dat set \code{A} (\eqn{N \times N} matrix), the adjacency matrix for input dat set \code{B} (\eqn{N \times N} matrix), the value of the test statistic for each node-node pair (\eqn{N \times N} matrix), the values of the test statistics for each node-node pair when applying the permutations (\code{permnum}\eqn{\times N \times N} array), the p-value for each node-node pair (\eqn{N \times N} matrix), the p-value for each node-node pair when inserting a pseudocount in the p-value calculation to avoid p-values that are exactly zero in permutation-based settings (\eqn{N \times N} matrix), a simplified overview of the p-values for the node-node pairs (\eqn{\frac{N(N-1)}{2} \times 3} matrix; node-node pair in columns 1 and 2, corresponding p-value in column 3), a simplified overview of the p-values for the node-node pairs when inserting a pseudocount in the p-value calculation (\eqn{\frac{N(N-1)}{2} \times 3} matrix; node-node pair in columns 1 and 2, corresponding p-value in column 3)}
@@ -686,185 +728,185 @@ edge.inv<-function(A,B){
 #' @export
 #'
 perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, paired = FALSE)
-  {
-    stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = (class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") && class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") && ncol(A) == ncol(B)), `permnum needs to be a natural number.` = permnum >
-                0 && permnum%%1 == 0, `thresh needs to be a non-negative number.` = thresh >=
-                0, `score.funct needs to be a function.` = class(score.funct) ==
-                "function", `paired needs to be a boolean.` = paired ==
-                TRUE || paired == FALSE)
-    if (identical(score.funct, number.differences)) {
-      graph.A <- create.graph(A, methodlist = methodlist, thresh = thresh)
-      graph.B <- create.graph(B, methodlist = methodlist, thresh = thresh)
-      value.orig <- number.differences(graph.A, graph.B)
-      names(value.orig) <- c("Graph Diff num of edges",
-                             "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
-                             "MST Diff num of edges", "MST Diff num of clusters",
-                             "MST Diff num of isolated nodes")
-    }
-    else {
-      adj.A <- create.adjacency.matrix(A, methodlist = methodlist,
-                                       thresh = thresh)
-      adj.B <- create.adjacency.matrix(B, methodlist = methodlist,
-                                       thresh = thresh)
-      value.orig <- score.funct(adj.A, adj.B)
-    }
-    if (paired == FALSE) {
-      D <- rbind(A, B)
-      create.permut.unpaired <- function(seedex) {
-        set.seed(seedex)
-        s <- sample(nrow(D), replace = FALSE)
-        D.new <- D[s, ]
-        A.new <- D.new[1:nrow(A), ]
-        B.new <- D.new[(nrow(A) + 1):(nrow(D.new)), ]
-        output <- list(A.new, B.new)
-        return(output)
-      }
-      shuffle <- lapply(1:permnum, create.permut.unpaired)
-    }
-    if (paired == TRUE) {
-      create.permut.paired <- function(seedex) {
-        set.seed(seedex)
-        s <- sample(c("A", "B"), nrow(A), replace = TRUE)
-        A.new <- rbind(A[s == "A", ], B[s == "B",
-                                        ])
-        B.new <- rbind(B[s == "A", ], A[s == "B",
-                                        ])
-        output <- list(A.new, B.new)
-        return(output)
-      }
-      shuffle <- lapply(1:permnum, create.permut.paired)
-    }
-    if (any(identical(score.funct, frobenius.metric), identical(score.funct,
-                                                                maximum.metric), identical(score.funct, spec.dist), identical(score.funct,
-                                                                                                                              global.str))) {
-      value.perm <- rep(NA, permnum)
-      for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
-                                              methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
-                                              methodlist = methodlist, thresh = thresh)
-        value.perm[n] <- score.funct(adj.A.perm, adj.B.perm)
-      }
-      num.extr <- sum(value.perm >= value.orig)
-      pvalue.ecdf <- num.extr/permnum
-      pvalue.ecdf.pseudo <- (1 + num.extr)/(permnum + 1)
-      output <- list(adj.A, adj.B, value.orig, value.perm,
-                     pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
-                         "test.statistic", "test.statistics.perm",
-                         "pvalue", "pvalue.pseudocount")
-    }
-    if (identical(score.funct, number.differences)) {
-      value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
-      for (n in 1:permnum) {
-        graph.A.perm <- create.graph(shuffle[[n]][[1]], methodlist = methodlist,
+{
+  stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = (class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") && class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") && ncol(A) == ncol(B)), `permnum needs to be a natural number.` = permnum >
+              0 && permnum%%1 == 0, `thresh needs to be a non-negative number.` = thresh >=
+              0, `score.funct needs to be a function.` = class(score.funct) ==
+              "function", `paired needs to be a boolean.` = paired ==
+              TRUE || paired == FALSE)
+  if (identical(score.funct, number.differences)) {
+    graph.A <- create.graph(A, methodlist = methodlist, thresh = thresh)
+    graph.B <- create.graph(B, methodlist = methodlist, thresh = thresh)
+    value.orig <- number.differences(graph.A, graph.B)
+    names(value.orig) <- c("Graph Diff num of edges",
+                           "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                           "MST Diff num of edges", "MST Diff num of clusters",
+                           "MST Diff num of isolated nodes")
+  }
+  else {
+    adj.A <- create.adjacency.matrix(A, methodlist = methodlist,
                                      thresh = thresh)
-        graph.B.perm <- create.graph(shuffle[[n]][[2]], methodlist = methodlist,
+    adj.B <- create.adjacency.matrix(B, methodlist = methodlist,
                                      thresh = thresh)
-        value.perm[n, ] <- number.differences(graph.A.perm,
-                                              graph.B.perm)
+    value.orig <- score.funct(adj.A, adj.B)
+  }
+  if (paired == FALSE) {
+    D <- rbind(A, B)
+    create.permut.unpaired <- function(seedex) {
+      set.seed(seedex)
+      s <- sample(nrow(D), replace = FALSE)
+      D.new <- D[s, ]
+      A.new <- D.new[1:nrow(A), ]
+      B.new <- D.new[(nrow(A) + 1):(nrow(D.new)), ]
+      output <- list(A.new, B.new)
+      return(output)
+    }
+    shuffle <- lapply(1:permnum, create.permut.unpaired)
+  }
+  if (paired == TRUE) {
+    create.permut.paired <- function(seedex) {
+      set.seed(seedex)
+      s <- sample(c("A", "B"), nrow(A), replace = TRUE)
+      A.new <- rbind(A[s == "A", ], B[s == "B",
+      ])
+      B.new <- rbind(B[s == "A", ], A[s == "B",
+      ])
+      output <- list(A.new, B.new)
+      return(output)
+    }
+    shuffle <- lapply(1:permnum, create.permut.paired)
+  }
+  if (any(identical(score.funct, frobenius.metric), identical(score.funct,
+                                                              maximum.metric), identical(score.funct, spec.dist), identical(score.funct,
+                                                                                                                            global.str),identical(score.funct, jaccard.dist))) {
+    value.perm <- rep(NA, permnum)
+    for (n in 1:permnum) {
+      adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
+                                            methodlist = methodlist, thresh = thresh)
+      adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
+                                            methodlist = methodlist, thresh = thresh)
+      value.perm[n] <- score.funct(adj.A.perm, adj.B.perm)
+    }
+    num.extr <- sum(value.perm >= value.orig)
+    pvalue.ecdf <- num.extr/permnum
+    pvalue.ecdf.pseudo <- (1 + num.extr)/(permnum + 1)
+    output <- list(adj.A, adj.B, value.orig, value.perm,
+                   pvalue.ecdf, pvalue.ecdf.pseudo)
+    names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+                       "test.statistic", "test.statistics.perm",
+                       "pvalue", "pvalue.pseudocount")
+  }
+  if (identical(score.funct, number.differences)) {
+    value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
+    for (n in 1:permnum) {
+      graph.A.perm <- create.graph(shuffle[[n]][[1]], methodlist = methodlist,
+                                   thresh = thresh)
+      graph.B.perm <- create.graph(shuffle[[n]][[2]], methodlist = methodlist,
+                                   thresh = thresh)
+      value.perm[n, ] <- number.differences(graph.A.perm,
+                                            graph.B.perm)
+    }
+    pvalue.ecdf <- rep(NA, length(value.orig))
+    pvalue.ecdf.pseudo <- rep(NA, length(value.orig))
+    for (j in 1:length(value.orig)) {
+      if (all(is.na(value.orig[j]) == TRUE)) {
+        pvalue.ecdf[j] <- NA
+        pvalue.ecdf.pseudo[j] <- NA
       }
-      pvalue.ecdf <- rep(NA, length(value.orig))
-      pvalue.ecdf.pseudo <- rep(NA, length(value.orig))
-      for (j in 1:length(value.orig)) {
-        if (all(is.na(value.orig[j]) == TRUE)) {
-          pvalue.ecdf[j] <- NA
-          pvalue.ecdf.pseudo[j] <- NA
+      else {
+        if (all(is.na(value.perm[, j]) == FALSE)) {
+          num.extr <- sum(value.perm[, j] >= value.orig[j])
+          pvalue.ecdf[j] <- num.extr/permnum
+          pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
+                                                     1)
         }
         else {
-          if (all(is.na(value.perm[, j]) == FALSE)) {
-            num.extr <- sum(value.perm[, j] >= value.orig[j])
-            pvalue.ecdf[j] <- num.extr/permnum
-            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
-                                                       1)
-          }
-          else {
-            permnum <- length(na.omit(value.perm[, j]))
-            num.extr <- sum(na.omit(value.perm[, j]) >=
-                              value.orig[j])
-            pvalue.ecdf[j] <- num.extr/permnum
-            pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
-                                                       1)
-          }
+          permnum <- length(na.omit(value.perm[, j]))
+          num.extr <- sum(na.omit(value.perm[, j]) >=
+                            value.orig[j])
+          pvalue.ecdf[j] <- num.extr/permnum
+          pvalue.ecdf.pseudo[j] <- (1 + num.extr)/(permnum +
+                                                     1)
         }
       }
-      names(pvalue.ecdf) <- c("Graph Diff num of edges",
-                              "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
-                              "MST Diff num of edges", "MST Diff num of clusters",
-                              "MST Diff num of isolated nodes")
-      names(pvalue.ecdf.pseudo) <- c("Graph Diff num of edges",
-                                     "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
-                                     "MST Diff num of edges", "MST Diff num of clusters",
-                                     "MST Diff num of isolated nodes")
-      output <- list(graph.A, graph.B, value.orig, value.perm,
-                     pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("graph.A", "graph.B",
-                         "test.statistic", "test.statistics.perm",
-                         "pvalue", "pvalue.pseudocount")
     }
-    if (any(identical(score.funct, degree.inv), identical(score.funct,
-                                                          betweenness.inv), identical(score.funct, closeness.inv),
-            identical(score.funct, eigen.inv))) {
-      value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
-      for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
-                                              methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
-                                              methodlist = methodlist, thresh = thresh)
-        value.perm[n, ] <- score.funct(adj.A.perm, adj.B.perm)
-      }
-      pvalue.ecdf <- rep(NA, length(value.orig))
-      pvalue.ecdf.pseudo <- rep(NA, length(value.orig))
-      names(pvalue.ecdf) <- names(value.orig)
-      names(pvalue.ecdf.pseudo) <- names(value.orig)
-      for (i in 1:length(value.orig)) {
-        num.extr <- sum(value.perm[, i] >= value.orig[i])
-        pvalue.ecdf[i] <- num.extr/permnum
-        pvalue.ecdf.pseudo[i] <- (1 + num.extr)/(permnum +
-                                                   1)
-      }
-      output <- list(adj.A, adj.B, value.orig, value.perm,
-                     pvalue.ecdf, pvalue.ecdf.pseudo)
-      names(output) <- c("adjacency.matrix.A", "adjacency.matrix.B",
-                         "test.statistic", "test.statistics.perm",
-                         "pvalue", "pvalue.pseudocount")
-    }
-    if (any(identical(score.funct, edge.inv), identical(score.funct,
-                                                        edge.inv.direc))) {
-      value.perm <- array(data = NA, dim = c(permnum, dim(adj.A)))
-      for (n in 1:permnum) {
-        adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
-                                              methodlist = methodlist, thresh = thresh)
-        adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
-                                              methodlist = methodlist, thresh = thresh)
-        value.perm[n, , ] <- score.funct(adj.A.perm, adj.B.perm)
-      }
-      pvalue.ecdf <- array(data = NA, dim = dim(value.orig),
-                           dimnames = list(rownames(value.orig), colnames(value.orig)))
-      pvalue.ecdf.pseudo <- array(data = NA, dim = dim(value.orig),
-                                  dimnames = list(rownames(value.orig), colnames(value.orig)))
-      for (i in 1:dim(value.orig)[1]) {
-        for (j in 1:dim(value.orig)[2]) {
-          num.extr <- sum(value.perm[, i, j] >= value.orig[i,
-                                                           j])
-          pvalue.ecdf[i, j] <- num.extr/permnum
-          pvalue.ecdf.pseudo[i, j] <- (1 + num.extr)/(permnum +
-                                                        1)
-        }
-      }
-      p.ecdf <- data.frame(var1 = rownames(pvalue.ecdf)[row(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
-                           var2 = colnames(pvalue.ecdf)[col(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
-                           pvalue = pvalue.ecdf[upper.tri(pvalue.ecdf)])
-      p.ecdf.pseudo <- data.frame(var1 = rownames(pvalue.ecdf.pseudo)[row(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
-                                  var2 = colnames(pvalue.ecdf.pseudo)[col(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
-                                  pvalue = pvalue.ecdf.pseudo[upper.tri(pvalue.ecdf.pseudo)])
-      output <- list(adj.A, adj.B, value.orig, value.perm,
-                     pvalue.ecdf, pvalue.ecdf.pseudo, p.ecdf, p.ecdf.pseudo)
-      names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
-                         "test.statistic", "test.statistics.perm",
-                         "pvalue", "pvalue.pseudocount", "pvalue.summ",
-                         "pvalue.pseudocount.summ")
-    }
-    return(output)
+    names(pvalue.ecdf) <- c("Graph Diff num of edges",
+                            "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                            "MST Diff num of edges", "MST Diff num of clusters",
+                            "MST Diff num of isolated nodes")
+    names(pvalue.ecdf.pseudo) <- c("Graph Diff num of edges",
+                                   "Graph Diff num of clusters", "Graph Diff num of isolated nodes",
+                                   "MST Diff num of edges", "MST Diff num of clusters",
+                                   "MST Diff num of isolated nodes")
+    output <- list(graph.A, graph.B, value.orig, value.perm,
+                   pvalue.ecdf, pvalue.ecdf.pseudo)
+    names(output) <- c("graph.A", "graph.B",
+                       "test.statistic", "test.statistics.perm",
+                       "pvalue", "pvalue.pseudocount")
   }
+  if (any(identical(score.funct, degree.inv), identical(score.funct,
+                                                        betweenness.inv), identical(score.funct, closeness.inv),
+          identical(score.funct, eigen.inv))) {
+    value.perm <- array(data = NA, dim = c(permnum, length(value.orig)))
+    for (n in 1:permnum) {
+      adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
+                                            methodlist = methodlist, thresh = thresh)
+      adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
+                                            methodlist = methodlist, thresh = thresh)
+      value.perm[n, ] <- score.funct(adj.A.perm, adj.B.perm)
+    }
+    pvalue.ecdf <- rep(NA, length(value.orig))
+    pvalue.ecdf.pseudo <- rep(NA, length(value.orig))
+    names(pvalue.ecdf) <- names(value.orig)
+    names(pvalue.ecdf.pseudo) <- names(value.orig)
+    for (i in 1:length(value.orig)) {
+      num.extr <- sum(value.perm[, i] >= value.orig[i])
+      pvalue.ecdf[i] <- num.extr/permnum
+      pvalue.ecdf.pseudo[i] <- (1 + num.extr)/(permnum +
+                                                 1)
+    }
+    output <- list(adj.A, adj.B, value.orig, value.perm,
+                   pvalue.ecdf, pvalue.ecdf.pseudo)
+    names(output) <- c("adjacency.matrix.A", "adjacency.matrix.B",
+                       "test.statistic", "test.statistics.perm",
+                       "pvalue", "pvalue.pseudocount")
+  }
+  if (any(identical(score.funct, edge.inv), identical(score.funct,
+                                                      edge.inv.direc))) {
+    value.perm <- array(data = NA, dim = c(permnum, dim(adj.A)))
+    for (n in 1:permnum) {
+      adj.A.perm <- create.adjacency.matrix(shuffle[[n]][[1]],
+                                            methodlist = methodlist, thresh = thresh)
+      adj.B.perm <- create.adjacency.matrix(shuffle[[n]][[2]],
+                                            methodlist = methodlist, thresh = thresh)
+      value.perm[n, , ] <- score.funct(adj.A.perm, adj.B.perm)
+    }
+    pvalue.ecdf <- array(data = NA, dim = dim(value.orig),
+                         dimnames = list(rownames(value.orig), colnames(value.orig)))
+    pvalue.ecdf.pseudo <- array(data = NA, dim = dim(value.orig),
+                                dimnames = list(rownames(value.orig), colnames(value.orig)))
+    for (i in 1:dim(value.orig)[1]) {
+      for (j in 1:dim(value.orig)[2]) {
+        num.extr <- sum(value.perm[, i, j] >= value.orig[i,
+                                                         j])
+        pvalue.ecdf[i, j] <- num.extr/permnum
+        pvalue.ecdf.pseudo[i, j] <- (1 + num.extr)/(permnum +
+                                                      1)
+      }
+    }
+    p.ecdf <- data.frame(var1 = rownames(pvalue.ecdf)[row(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
+                         var2 = colnames(pvalue.ecdf)[col(pvalue.ecdf)[upper.tri(pvalue.ecdf)]],
+                         pvalue = pvalue.ecdf[upper.tri(pvalue.ecdf)])
+    p.ecdf.pseudo <- data.frame(var1 = rownames(pvalue.ecdf.pseudo)[row(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
+                                var2 = colnames(pvalue.ecdf.pseudo)[col(pvalue.ecdf.pseudo)[upper.tri(pvalue.ecdf.pseudo)]],
+                                pvalue = pvalue.ecdf.pseudo[upper.tri(pvalue.ecdf.pseudo)])
+    output <- list(adj.A, adj.B, value.orig, value.perm,
+                   pvalue.ecdf, pvalue.ecdf.pseudo, p.ecdf, p.ecdf.pseudo)
+    names(output) <- c("adjancency.matrix.A", "adjacency.matrix.B",
+                       "test.statistic", "test.statistics.perm",
+                       "pvalue", "pvalue.pseudocount", "pvalue.summ",
+                       "pvalue.pseudocount.summ")
+  }
+  return(output)
+}
 
