@@ -4,7 +4,7 @@ Differential network tests
 
 > When using the DNT package, please cite the accompanying paper, where also additional methodological information can be found:  
 > 
-> Schefzik, R., Boland, L., Hahn, B., Kirschning, T., Lindner, H. A., Thiel, M., and Schneider-Lindner, V. (2022). Differential network testing reveals diverging dynamics of organ system interactions for survivors and non-survivors in intensive care medicine. *Frontiers in Physiology*, 12:801622. doi: 10.3389/fphys.2021.801622
+> Schefzik, R., Boland, L., Hahn, B., Kirschning, T., Lindner, H. A., Thiel, M., and Schneider-Lindner, V. (2021). Differential network testing reveals diverging dynamics of organ system interactions for survivors and non-survivors in intensive care medicine. *Frontiers in Physiology*, 12:801622. doi: 10.3389/fphys.2021.801622
 
 ## Installation
 
