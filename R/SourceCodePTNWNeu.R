@@ -31,19 +31,19 @@
 #'
 create.adjacency.matrix<-function (A, methodlist, thresh = 0.05)
   {
-    stopifnot(`A needs to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")), `The matrix A needs to have more than 4 rows` = nrow(A) >
-                4, `The matrix A needs to have at least one column` = ncol(A) >=
-                1, `Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)` = class(methodlist) ==
-                "list" && length(methodlist) >= 1 && (length(methodlist) ==
-                                                        1 || class(methodlist[[2]]) == "character") ||
-                methodlist[[1]] == "EBICglasso" && class(methodlist[[2]]) ==
-                "character" && (class(methodlist[[3]]) == "numeric" ||
-                                  class(methodlist[[3]]) == "integer"), `For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed` = (stringr::str_detect(methodlist[[1]],
-                                                                                                                                                                                                                                                     "\\.adj") == FALSE && length(methodlist) >= 1) &&
-                methodlist[[1]] != "EBICglasso" || (stringr::str_detect(methodlist[[1]],
-                                                                        "\\.adj") && length(methodlist) >= 2) || (methodlist[[1]] ==
-                                                                                                                    "EBICglasso" && length(methodlist) >= 3), `Thresh needs to be a non-negative number` = class(thresh) ==
-                "numeric" && thresh >= 0)
+  stopifnot(`A needs to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")), `The matrix A needs to have more than 4 rows` = nrow(A) >
+              4, `The matrix A needs to have at least one column` = ncol(A) >=
+              1, `Methodlist needs to be a list of Strings  with at least one element (except for the method EBICglasso where the third elements needs to be a number)` = class(methodlist) ==
+              "list" && length(methodlist) >= 1 && (length(methodlist) ==
+                                                      1 || class(methodlist[[2]]) == "character") ||
+              methodlist[[1]] == "EBICglasso" && class(methodlist[[2]]) ==
+              "character" && (class(methodlist[[3]]) == "numeric" ||
+                                class(methodlist[[3]]) == "integer"), `For methods with the ending '.adj' a second method is needed and when using the method 'EBICglasso' one extra method and one extra value are needed` = (stringr::str_detect(methodlist[[1]],
+                                                                                                                                                                                                                                                   "\\.adj") == FALSE && length(methodlist) >= 1) &&
+              methodlist[[1]] != "EBICglasso" || (stringr::str_detect(methodlist[[1]],
+                                                                      "\\.adj") && length(methodlist) >= 2) || (methodlist[[1]] ==
+                                                                                                                  "EBICglasso" && length(methodlist) >= 3), `Thresh needs to be a non-negative number` = class(thresh) ==
+              "numeric" && thresh >= 0)
     method <- methodlist[[1]]
     if (method == "Spearman") {
       correls <- Hmisc::rcorr(as.matrix(A), type = "spearman")
@@ -200,7 +200,7 @@ create.graph<-function (A, methodlist, thresh = 0.05)
       igraph::E(g)[which(igraph::E(g)$weight < 0)]$color <- "red"
       igraph::E(g)[which(igraph::E(g)$weight > 0)]$color <- "blue"
       igraph::V(g)$name <- igraph::V(g)$name
-      g.communities <- igraph::edge.betweenness.community(g, weights = NULL,
+      g.communities <- igraph::edge.betweenness.community(g, weights = NA,
                                                           directed = FALSE)
       g.clustering <- igraph::make_clusters(g, membership = g.communities$membership)
       igraph::V(g)$color <- g.communities$membership
@@ -209,7 +209,7 @@ create.graph<-function (A, methodlist, thresh = 0.05)
       clusnum.g <- length(unique(g.communities$membership))
       numisolnodes.g <- length(which(deg.g == 0))
       mst <- igraph::mst(g, algorithm = "prim")
-      mst.communities <- igraph::edge.betweenness.community(mst, weights = NULL,
+      mst.communities <- igraph::edge.betweenness.community(mst, weights = NA,
                                                             directed = FALSE)
       mst.clustering <- igraph::make_clusters(mst, membership = mst.communities$membership)
       igraph::V(mst)$color <- mst.communities$membership
@@ -251,9 +251,9 @@ create.graph<-function (A, methodlist, thresh = 0.05)
 #' @export
 #'
 frobenius.metric<-function(A,B){
-  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
-                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = all((class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array"))),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) & ncol(A)==ncol(B)))
 
   output<-sqrt(sum(abs((A-B)^2)))
   return(output)
@@ -272,9 +272,9 @@ frobenius.metric<-function(A,B){
 #' @export
 #'
 maximum.metric<-function(A,B){
-  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
-                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = all((class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array"))),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) & ncol(A)==ncol(B)))
 
   output<-max(abs(A-B))
   return(output)
@@ -294,9 +294,9 @@ maximum.metric<-function(A,B){
 #' @export
 #'
 spec.dist<-function(A,B){
-  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
-                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = all((class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array"))),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) & ncol(A)==ncol(B)))
 
   output<-sqrt(sum(((eigen(A)$values)-(eigen(B)$values))^2))
   return(output)
@@ -316,9 +316,9 @@ spec.dist<-function(A,B){
 #' @export
 #'
 jaccard.dist<-function(A,B){
-  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
-              (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = all((class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &
+              (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array"))),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) & ncol(A)==ncol(B)))
 
 
   A.new <- data.frame(var1 = rownames(A)[row(A)[upper.tri(A)]],
@@ -357,9 +357,9 @@ jaccard.dist<-function(A,B){
 #' @export
 #'
 global.str<-function(A,B){
-  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = (class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &&
-                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be a data frame, array, tibble or matrix` = all((class(A) %in% c("tbl_df", "tbl", "data.frame","matrix", "array")) &
+                                                                         (class(B) %in% c("tbl_df", "tbl", "data.frame","matrix", "array"))),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) & ncol(A)==ncol(B)))
 
   output<-abs(sum(abs(A))-sum(abs(B)))
   return(output)
@@ -380,13 +380,14 @@ global.str<-function(A,B){
 #'
 number.differences<-function(A,B){
 
-  stopifnot(`A and B need to be adjacency matrices.` = class(A[[1]]) %in% c("matrix","array") && class(B[[1]]) %in% c("matrix","array")
-            && nrow(A[[1]])==ncol(A[[1]]) && nrow(B[[1]])==ncol(B[[1]]),
+  stopifnot(`A and B need to be adjacency matrices.` = all(class(A[[1]]) %in% c("matrix","array") & class(B[[1]]) %in% c("matrix","array")
+            & nrow(A[[1]])==ncol(A[[1]]) & nrow(B[[1]])==ncol(B[[1]])),
             `The listelements 6, 7, 8, 13, 14 and 15 need to be numbers. (This is the case if A and B are results of the function create.graph.)` =
-              all(lapply(A, class)[6:8] %in% c("numeric", "integer")) &&
-              all(lapply(B, class)[6:8] %in% c("numeric", "integer")) &&
-              all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &&
+            all(all(lapply(A, class)[6:8] %in% c("numeric", "integer")) &
+              all(lapply(B, class)[6:8] %in% c("numeric", "integer")) &
+              all(lapply(A, class)[13:15] %in% c("numeric", "integer")) &
               all(lapply(B, class)[13:15] %in% c("numeric", "integer")))
+  )
 
 
     dnumedges.g<-abs(A[[6]]-B[[6]])
@@ -423,8 +424,8 @@ number.differences<-function(A,B){
 #'
 degree.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
-            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+  stopifnot(`X and Y need to be matrices` = all(class(X) %in% c("matrix","array") & class(Y) %in% c("matrix","array")),
+            `X and Y need to have the same dimensions` = all(nrow(X)==nrow(Y) & ncol(X)==ncol(Y)),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
 
@@ -472,8 +473,8 @@ degree.inv<-function(X,Y){
 #'
 betweenness.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
-            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+  stopifnot(`X and Y need to be matrices` = all(class(X) %in% c("matrix","array") & class(Y) %in% c("matrix","array")),
+            `X and Y need to have the same dimensions` = all(nrow(X)==nrow(Y) & ncol(X)==ncol(Y)),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
   if(all(X==0)){
@@ -520,8 +521,8 @@ betweenness.inv<-function(X,Y){
 #'
 closeness.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
-            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+  stopifnot(`X and Y need to be matrices` = all(class(X) %in% c("matrix","array") & class(Y) %in% c("matrix","array")),
+            `X and Y need to have the same dimensions` = all(nrow(X)==nrow(Y) && ncol(X)==ncol(Y)),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
 
@@ -569,8 +570,8 @@ closeness.inv<-function(X,Y){
 #'
 eigen.inv<-function(X,Y){
 
-  stopifnot(`X and Y need to be matrices` = class(X) %in% c("matrix","array") && class(Y) %in% c("matrix","array"),
-            `X and Y need to have the same dimensions` = nrow(X)==nrow(Y) && ncol(X)==ncol(Y),
+  stopifnot(`X and Y need to be matrices` = all(class(X) %in% c("matrix","array") & class(Y) %in% c("matrix","array")),
+            `X and Y need to have the same dimensions` = all(nrow(X)==nrow(Y) && ncol(X)==ncol(Y)),
             `To compare the graphs of X and Y correctly they need the same columntitles` = colnames(X)==colnames(Y))
 
   if(all(X==0)){
@@ -621,9 +622,9 @@ eigen.inv<-function(X,Y){
 #'
 edge.inv.direc<-function(A,B){
 
-  stopifnot(`A and B need to be matrices or tibbles` = class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &&
-                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame"),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be matrices or tibbles` = all(class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &
+                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame")),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) && ncol(A)==ncol(B)))
 
   output<-abs(A-B)
   rownames(output)<-rownames(A)
@@ -648,9 +649,9 @@ edge.inv.direc<-function(A,B){
 #'
 edge.inv<-function(A,B){
 
-  stopifnot(`A and B need to be matrices or tibbles` = class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &&
-                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame"),
-            `A and B need to have the same dimensions` = nrow(A)==nrow(B) && ncol(A)==ncol(B))
+  stopifnot(`A and B need to be matrices or tibbles` = all(class(A) %in% c("matrix","array","tbl_df","tbl","data.frame") &
+                                                       class(B) %in% c("matrix","array","tbl_df","tbl","data.frame")),
+            `A and B need to have the same dimensions` = all(nrow(A)==nrow(B) && ncol(A)==ncol(B)))
 
   output<-abs(abs(A)-abs(B))
   rownames(output)<-rownames(A)
@@ -729,11 +730,11 @@ edge.inv<-function(A,B){
 #'
 perm.test.nw<-function (A, B, permnum, methodlist, thresh=0.05, score.funct, paired = FALSE)
 {
-  stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = (class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") && class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") && ncol(A) == ncol(B)), `permnum needs to be a natural number.` = permnum >
-              0 && permnum%%1 == 0, `thresh needs to be a non-negative number.` = thresh >=
+  stopifnot(`A and B need to be data frames, arrays, matrices or tibbles with the same number of columns (nodes) and column names if applicable.` = all((class(A) %in%  c("matrix", "array","tbl_df",  "tbl", "data.frame") & class(B) %in% c("matrix","array","tbl_df", "tbl", "data.frame") & ncol(A) == ncol(B))), `permnum needs to be a natural number.` = all(permnum >
+              0 & permnum%%1 == 0), `thresh needs to be a non-negative number.` = thresh >=
               0, `score.funct needs to be a function.` = class(score.funct) ==
-              "function", `paired needs to be a boolean.` = paired ==
-              TRUE || paired == FALSE)
+              "function", `paired needs to be a boolean.` = any(paired ==
+              TRUE | paired == FALSE))
   if (identical(score.funct, number.differences)) {
     graph.A <- create.graph(A, methodlist = methodlist, thresh = thresh)
     graph.B <- create.graph(B, methodlist = methodlist, thresh = thresh)

@@ -57,14 +57,14 @@
 #'
 comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB = TRUE, networkAtitle = "Network A", networkBtitle = "Network B", cluster = TRUE, negcol = "red", poscol= "blue",multiplier = 4, curved = TRUE, layout = igraph::layout.auto, vSize = 16, tSize = 0.8){
 
-  stopifnot(`cluster needs to be boolean` = cluster==TRUE || cluster==FALSE,
-            `negcol and poscol need to be strings` = class(negcol)=="character" && class(poscol)=="character",
-            `multiplier needs to be a positive number` = class(multiplier) %in% c("numeric","integer") && multiplier>0,
-            `networkA and networkB must be boolean` = class(networkA)=="logical" && class(networkB)=="logical",
-            `networkAtitle and networkBtitle must be srings` = class(networkAtitle)=="character" && class(networkBtitle)=="character",
+  stopifnot(`cluster needs to be boolean` = any(cluster==TRUE | cluster==FALSE),
+            `negcol and poscol need to be strings` = all(class(negcol)=="character" & class(poscol)=="character"),
+            `multiplier needs to be a positive number` = all(class(multiplier) %in% c("numeric","integer") & multiplier>0),
+            `networkA and networkB must be boolean` = all(class(networkA)=="logical" & class(networkB)=="logical"),
+            `networkAtitle and networkBtitle must be srings` = all(class(networkAtitle)=="character" & class(networkBtitle)=="character"),
             `layout needs to be a layout-function` = class(layout)=="function",
-            `vSize and tSize need to be positive numbers` = class(vSize) %in% c("numeric","integer") &&
-              class(tSize) %in% c("numeric","integer"),
+            `vSize and tSize need to be positive numbers` = all(class(vSize) %in% c("numeric","integer") &
+              class(tSize) %in% c("numeric","integer")),
             `vSize needs to be 20 times bigger than tSize to have a good relation between the names and the vertices` = tSize*20<=vSize)
 
   if(networkA == TRUE){
@@ -99,8 +99,8 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g1[[2]])$weight*multiplier,
-        edge.color = E(g1[[2]])$color,
+        edge.width=igraph::E(g1[[2]])$weight*multiplier,
+        edge.color = igraph::E(g1[[2]])$color,
         edge.arrow.mode=FALSE,
         main=networkAtitle)
     }else if(networkA == TRUE){
@@ -110,7 +110,7 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g1[[2]])$weight*multiplier,
+        edge.width=igraph::E(g1[[2]])$weight*multiplier,
         edge.arrow.mode=FALSE,
         main=networkAtitle)
       mtext("No correlations!", side = 1)
@@ -123,8 +123,8 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g2[[2]])$weight*multiplier,
-        edge.color = E(g2[[2]])$color,
+        edge.width=igraph::E(g2[[2]])$weight*multiplier,
+        edge.color = igraph::E(g2[[2]])$color,
         edge.arrow.mode=FALSE,
         main=networkBtitle)
     }else if(networkB == TRUE){
@@ -134,7 +134,7 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g2[[2]])$weight*multiplier,
+        edge.width=igraph::E(g2[[2]])$weight*multiplier,
         edge.arrow.mode=FALSE,
         main=networkBtitle)
       mtext("No correlations!", side = 1)
@@ -148,7 +148,7 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g1[[2]])$weight*multiplier,
+        edge.width=igraph::E(g1[[2]])$weight*multiplier,
         edge.arrow.mode=FALSE,
         main=networkAtitle)
     }
@@ -160,7 +160,7 @@ comp.plot<-function(A, B, methodlist, thresh = 0.05, networkA = TRUE, networkB =
         edge.curved=curved,
         vertex.size=vSize,
         vertex.label.cex=tSize,
-        edge.width=E(g2[[2]])$weight*multiplier,
+        edge.width=igraph::E(g2[[2]])$weight*multiplier,
         edge.arrow.mode=FALSE,
         main=networkBtitle)
     }
@@ -214,7 +214,7 @@ create.Igraphclustering<-function (A, methodlist, thresh = 0.05)
                             diag = FALSE)
     g.x1 <- igraph::simplify(g.x1, remove.multiple = TRUE, remove.loops = TRUE)
     g.communities.x1 <- igraph::edge.betweenness.community(g.x1,
-                                                   weights = NULL, directed = FALSE)
+                                                   weights = NA, directed = FALSE)
     g.clustering.x1 <- igraph::make_clusters(g.x1, membership = g.communities.x1$membership)
     igraph::V(g.x1)$color <- g.communities.x1$membership
     igraph::V(g.x1)$label.color <- "black"
